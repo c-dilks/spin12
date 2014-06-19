@@ -1,9 +1,19 @@
-#include "RunData.h"
+#include "RunData12.h"
 using namespace std;
 
-ClassImp(RunData)
+ClassImp(RunData12)
 
-RunData::RunData()
+RunData12::RunData12()
+{
+  Construct("");
+};
+
+RunData12::RunData12(char * spindir0)
+{
+  Construct(spindir0);
+};
+
+void RunData12::Construct(char * spindir0)
 {
   // define maxes
   NRUNS = sizeof(runnum_map)/sizeof(*runnum_map);
@@ -12,12 +22,17 @@ RunData::RunData()
 
 
   // read trees
-  char spindir[256];
+  //char spindir[256];
   char counts_file[256];
   char rtree_file[256];
   char pol_file[256];
-  if(gSystem->Getenv("SPINDIR")==NULL){fprintf(stderr,"ERROR: source env vars\n");return;};
-  sscanf(gSystem->Getenv("SPINDIR"),"%s",spindir);
+  if(!strcmp(spindir0,""))
+  {
+    if(gSystem->Getenv("SPINDIR")==NULL){fprintf(stderr,"ERROR: source env vars\n");return;};
+    sscanf(gSystem->Getenv("SPINDIR"),"%s",spindir);
+  }
+  else strcpy(spindir,spindir0);
+  printf("spindir=%s\n",spindir);
   sprintf(counts_file,"%s/counts.root",spindir);
   sprintf(rtree_file,"%s/rtree.root",spindir);
   sprintf(pol_file,"%s/pol.root",spindir);
@@ -105,7 +120,7 @@ RunData::RunData()
   // -- rtree tree is viewed as a hash table indexed by tree entry number
   // -- run index - 1 = rtree entry number
   Int_t runnum_tmp=0;
-  fill_thou=17000; // run13
+  fill_thou=16000; // run12
   for(Int_t q=0; q<rtree_tr->GetEntries(); q++)
   {
     rtree_tr->GetEntry(q);
@@ -155,7 +170,7 @@ RunData::RunData()
 }
 
 
-Int_t RunData::GetFill(Int_t runnum0)
+Int_t RunData12::GetFill(Int_t runnum0)
 {
   Int_t set;
   Int_t found=0;
@@ -173,7 +188,7 @@ Int_t RunData::GetFill(Int_t runnum0)
 }
 
 
-Int_t RunData::HashRun(Int_t runnum0)
+Int_t RunData12::HashRun(Int_t runnum0)
 {
   // linear hashing
   // -- returns "-1" if hashing fails
@@ -185,7 +200,7 @@ Int_t RunData::HashRun(Int_t runnum0)
 };
 
 
-Float_t RunData::Rellum(Int_t runnum0, Int_t rellumi, char * detector)
+Float_t RunData12::Rellum(Int_t runnum0, Int_t rellumi, char * detector)
 {
   Int_t cbit;
   Int_t index = HashRun(runnum0);
@@ -205,7 +220,7 @@ Float_t RunData::Rellum(Int_t runnum0, Int_t rellumi, char * detector)
 };
 
 
-Float_t RunData::RellumErr(Int_t runnum0, Int_t rellumi, char * detector)
+Float_t RunData12::RellumErr(Int_t runnum0, Int_t rellumi, char * detector)
 {
   Int_t cbit;
   Int_t index = HashRun(runnum0);
@@ -225,7 +240,7 @@ Float_t RunData::RellumErr(Int_t runnum0, Int_t rellumi, char * detector)
 };
 
 
-Bool_t RunData::RellumConsistent(Int_t runnum0)
+Bool_t RunData12::RellumConsistent(Int_t runnum0)
 {
   Int_t index = HashRun(runnum0);
   if(index>=0)
@@ -237,7 +252,7 @@ Bool_t RunData::RellumConsistent(Int_t runnum0)
 };
 
 
-Float_t RunData::BluePol(Int_t runnum0)
+Float_t RunData12::BluePol(Int_t runnum0)
 {
   Int_t fill0 = GetFill(runnum0);
   if(fill0>fill_thou)
@@ -246,7 +261,7 @@ Float_t RunData::BluePol(Int_t runnum0)
 }
 
 
-Float_t RunData::YellPol(Int_t runnum0)
+Float_t RunData12::YellPol(Int_t runnum0)
 {
   Int_t fill0 = GetFill(runnum0);
   if(fill0>fill_thou)
@@ -255,7 +270,7 @@ Float_t RunData::YellPol(Int_t runnum0)
 }
 
 
-Float_t RunData::BluePolErr(Int_t runnum0)
+Float_t RunData12::BluePolErr(Int_t runnum0)
 {
   Int_t fill0 = GetFill(runnum0);
   if(fill0>fill_thou)
@@ -264,7 +279,7 @@ Float_t RunData::BluePolErr(Int_t runnum0)
 }
 
 
-Float_t RunData::YellPolErr(Int_t runnum0)
+Float_t RunData12::YellPolErr(Int_t runnum0)
 {
   Int_t fill0 = GetFill(runnum0);
   if(fill0>fill_thou)
@@ -273,7 +288,7 @@ Float_t RunData::YellPolErr(Int_t runnum0)
 }
 
 
-Int_t RunData::BlueSpin(Int_t runnum0, Int_t bXing)
+Int_t RunData12::BlueSpin(Int_t runnum0, Int_t bXing)
 {
   Int_t index = HashRun(runnum0);
   if(bXing>=0 && bXing<120) return blue_spin_map[index][bXing];
@@ -285,7 +300,7 @@ Int_t RunData::BlueSpin(Int_t runnum0, Int_t bXing)
 };
 
 
-Int_t RunData::YellSpin(Int_t runnum0, Int_t bXing)
+Int_t RunData12::YellSpin(Int_t runnum0, Int_t bXing)
 {
   Int_t index = HashRun(runnum0);
   if(bXing>=0 && bXing<120) return yell_spin_map[index][bXing];
@@ -297,7 +312,7 @@ Int_t RunData::YellSpin(Int_t runnum0, Int_t bXing)
 };
 
 
-Bool_t RunData::Kicked(Int_t runnum0, Int_t bXing)
+Bool_t RunData12::Kicked(Int_t runnum0, Int_t bXing)
 {
   Int_t index = HashRun(runnum0);
   if(bXing>=0 && bXing<120) return kicked_bx_map[index][bXing];
@@ -309,7 +324,7 @@ Bool_t RunData::Kicked(Int_t runnum0, Int_t bXing)
 };
 
 
-Int_t RunData::Pattern(Int_t runnum0)
+Int_t RunData12::Pattern(Int_t runnum0)
 {
   Int_t fill0 = GetFill(runnum0);
   if(fill0>fill_thou)

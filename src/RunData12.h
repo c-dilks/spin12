@@ -1,5 +1,5 @@
-#ifndef RunData_
-#define RunData_
+#ifndef RunData12_
+#define RunData12_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +13,12 @@
 #include "TFile.h"
 
 
-class RunData : public TObject
+class RunData12 : public TObject
 {
   public:
-    RunData();
+    RunData12();
+    RunData12(char * spindir0);
+    void Construct(char * spindir0);
     Int_t GetFill(Int_t runnum0);
     Int_t HashRun(Int_t runnum0);
     Float_t Rellum(Int_t runnum0, Int_t rellumi, char * detector);
@@ -30,6 +32,8 @@ class RunData : public TObject
     Int_t YellSpin(Int_t runnum0, Int_t bXing);
     Bool_t Kicked(Int_t runnum0, Int_t bXing);
     Int_t Pattern(Int_t runnum0);
+
+    char spindir[256];
 
     // loop maxes
     Int_t NRUNS;
@@ -62,7 +66,7 @@ class RunData : public TObject
     Int_t pattern_no;
 
     // data arrays
-    Int_t fill_thou; // set to 17000 for run13
+    Int_t fill_thou; // set to 16000 for run12
     Int_t blue_spin_map[2000][120]; // [max no. runs (assumed)] [no. bXings] 
     Int_t yell_spin_map[2000][120]; 
     Int_t kicked_bx_map[2000][120]; 
@@ -81,7 +85,7 @@ class RunData : public TObject
     TTree * counts_tr;
     TTree * rtree_tr;
     TTree * pol_tr;
-    ClassDef(RunData,1);
+    ClassDef(RunData12,1);
 };
 
 #endif

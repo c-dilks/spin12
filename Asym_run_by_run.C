@@ -2,10 +2,10 @@
 
 void Asym_run_by_run()
 {
-  // open phi dists file and construct RunData RD
+  // open phi dists file and construct RunData12 RD
   TFile * infile = new TFile("phiset/all.root","READ");
-  gSystem->Load("src/RunData.so");
-  RunData * RD = new RunData();
+  gSystem->Load("src/RunData12.so");
+  RunData12 * RD = new RunData12();
 
 
   // get bins from environment

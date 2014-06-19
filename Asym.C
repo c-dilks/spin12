@@ -21,8 +21,8 @@ void Asym(const char * filter_type="all",Int_t filter_low=0, Int_t filter_high=0
 {
   const Float_t pi=3.1415;
   TFile * infile = new TFile("phiset/all.root","READ");
-  gSystem->Load("src/RunData.so");
-  RunData * RD = new RunData();
+  gSystem->Load("src/RunData12.so");
+  RunData12 * RD = new RunData12();
 
   // get bins from environment
   Int_t phi_bins0, eta_bins0, pt_bins0, en_bins0;

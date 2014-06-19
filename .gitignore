@@ -12,3 +12,5 @@ study_fill/*
 study_runs/*
 chisq
 corrupted
+src/*.so
+src/*Dict*

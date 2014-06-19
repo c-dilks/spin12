@@ -11,8 +11,8 @@ void ReduceData(const char * filename="Outputset145ka.root",
                 const char * dirname="../../Output")
 {
   // load polarization and rellum data
-  gSystem->Load("src/RunData.so");
-  RunData * RD = new RunData();
+  gSystem->Load("src/RunData12.so");
+  RunData12 * RD = new RunData12();
 
   char root_file[256];
   sprintf(root_file,"%s/%s",dirname,filename);
@@ -155,6 +155,9 @@ void ReduceData(const char * filename="Outputset145ka.root",
 
         runnum_tmp = runnum;
       };
+
+      // BXING SHIFT CORRECTION
+      Bunchid7bit = (Bunchid7bit+1)%120;
 
       blue_str = RD->BlueSpin(runnum,Bunchid7bit);
       yell_str = RD->YellSpin(runnum,Bunchid7bit);

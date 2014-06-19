@@ -1,7 +1,7 @@
 // adds relative luminosity and polarization data to reduced data trees
 // --> outputs modified redset files to subdirectory "patchset"
 // --> this was used to patch old redset files with more complete rellum info and will
-//     be deprecated when the ReduceData script is modified to make use of RunData methods
+//     be deprecated when the ReduceData script is modified to make use of RunData12 methods
 
 void PatchTrees2(const char * filename="RedOutputset156ha.root")
 {
@@ -44,8 +44,8 @@ void PatchTrees2(const char * filename="RedOutputset156ha.root")
   red_tr->SetBranchAddress("fill",&fill);
   red_tr->SetBranchAddress("pattern",&pattern);
 
-  gSystem->Load("src/RunData.so");
-  RunData * RD = new RunData();
+  gSystem->Load("src/RunData12.so");
+  RunData12 * RD = new RunData12();
 
   char patchname[512];
   sprintf(patchname,"patchset/%s",filename);
