@@ -121,15 +121,28 @@ void toa_add()
 
 
   // phi_dist [spin] [eta] [pt] [energy] [run index - 1]
-  TH1D * phi_dist[4][eta_bins][pt_bins][en_bins][rtree_ent];
+  TH1D * phi_dist_sph[4][eta_bins][pt_bins][en_bins][rtree_ent];
+  TH1D * phi_dist_pi0[4][eta_bins][pt_bins][en_bins][rtree_ent];
+  TH1D * phi_dist_thr[4][eta_bins][pt_bins][en_bins][rtree_ent];
   
   // infile_arr [spin] [eta] [pt] [energy] [phi file]
-  TObjArray * infile_arr[4][eta_bins][pt_bins][en_bins][NFILES];
-  char infile_arr_n[4][eta_bins][pt_bins][en_bins][200];
+  TObjArray * infile_sph_arr[4][eta_bins][pt_bins][en_bins][NFILES];
+  TObjArray * infile_pi0_arr[4][eta_bins][pt_bins][en_bins][NFILES];
+  TObjArray * infile_thr_arr[4][eta_bins][pt_bins][en_bins][NFILES];
+  char infile_sph_arr_n[4][eta_bins][pt_bins][en_bins][200];
+  char infile_pi0_arr_n[4][eta_bins][pt_bins][en_bins][200];
+  char infile_thr_arr_n[4][eta_bins][pt_bins][en_bins][200];
 
   Int_t inrun;
-  Bool_t filter[rtree_ent];
-  for(Int_t rr=0; rr<rtree_ent; rr++) filter[rr]=false;
+  Bool_t filter_sph[rtree_ent];
+  Bool_t filter_pi0[rtree_ent];
+  Bool_t filter_thr[rtree_ent];
+  for(Int_t rr=0; rr<rtree_ent; rr++) 
+  {
+    filter_sph[rr]=false;
+    filter_pi0[rr]=false;
+    filter_thr[rr]=false;
+  };
 
   for(Int_t f=0; f<NFILES; f++)
   {
@@ -145,31 +158,69 @@ void toa_add()
             // set up TObjArray names to be read (only needs one execution)
             if(f==0)
             {
-              sprintf(infile_arr_n[s][g][p][e],"phi_dist_s%d_g%d_p%d_e%d",s,g,p,e);
+              sprintf(infile_sph_arr_n[s][g][p][e],"/sph/phi_dist_sph_s%d_g%d_p%d_e%d",s,g,p,e);
+              sprintf(infile_pi0_arr_n[s][g][p][e],"/pi0/phi_dist_pi0_s%d_g%d_p%d_e%d",s,g,p,e);
+              sprintf(infile_thr_arr_n[s][g][p][e],"/thr/phi_dist_thr_s%d_g%d_p%d_e%d",s,g,p,e);
             };
             // read TObjArrays
-            infile_arr[s][g][p][e][f] = (TObjArray*)
-              phi_file[f]->Get(infile_arr_n[s][g][p][e]);
-            printf("%s: %s @ %p\n",filename[f],infile_arr_n[s][g][p][e],(void*)infile_arr[s][g][p][e][f]);
+            infile_sph_arr[s][g][p][e][f] = (TObjArray*)phi_file[f]->Get(infile_sph_arr_n[s][g][p][e]);
+            infile_pi0_arr[s][g][p][e][f] = (TObjArray*)phi_file[f]->Get(infile_pi0_arr_n[s][g][p][e]);
+            infile_thr_arr[s][g][p][e][f] = (TObjArray*)phi_file[f]->Get(infile_thr_arr_n[s][g][p][e]);
+            printf("%s: %p %p %p\n",filename[f],(void*)infile_sph_arr[s][g][p][e][f],
+                                                (void*)infile_pi0_arr[s][g][p][e][f],
+                                                (void*)infile_thr_arr[s][g][p][e][f]);
 
-            // loop through TObjArrays
-            for(Int_t o=0; o<infile_arr[s][g][p][e][f]->GetEntries(); o++)
+            // loop through sph TObjArrays
+            for(Int_t o=0; o<infile_sph_arr[s][g][p][e][f]->GetEntries(); o++)
             {
               // get run number "inrun"
-              sscanf(infile_arr[s][g][p][e][f]->At(o)->GetName(),
-                "phi_s%*d_g%*d_p%*d_e%*d_r%d",&inrun);
+              sscanf(infile_sph_arr[s][g][p][e][f]->At(o)->GetName(),
+                "phi_sph_s%*d_g%*d_p%*d_e%*d_r%d",&inrun);
               // linear hash --> typcast phi_dist's
               for(Int_t h=0; h<rtree_ent; h++)
               {
                 if(inrun == runnum_arr[h])
                 {
-                  phi_dist[s][g][p][e][h] = (TH1D*) infile_arr[s][g][p][e][f]->At(o);
-                  filter[h]=true;
-                  //printf("phi_dist[%d][%d][%d][%d][%d] @ %p\n",s,g,p,e,h,(void*)phi_dist[s][g][p][e][h]);
+                  phi_dist_sph[s][g][p][e][h] = (TH1D*) infile_sph_arr[s][g][p][e][f]->At(o);
+                  filter_sph[h]=true;
                 };
               };
-              //printf("%d/%d\n",o,infile_arr[s][g][p][e][f]->GetEntries());
             };
+
+            // loop through pi0 TObjArrays
+            for(Int_t o=0; o<infile_pi0_arr[s][g][p][e][f]->GetEntries(); o++)
+            {
+              // get run number "inrun"
+              sscanf(infile_pi0_arr[s][g][p][e][f]->At(o)->GetName(),
+                "phi_pi0_s%*d_g%*d_p%*d_e%*d_r%d",&inrun);
+              // linear hash --> typcast phi_dist's
+              for(Int_t h=0; h<rtree_ent; h++)
+              {
+                if(inrun == runnum_arr[h])
+                {
+                  phi_dist_pi0[s][g][p][e][h] = (TH1D*) infile_pi0_arr[s][g][p][e][f]->At(o);
+                  filter_pi0[h]=true;
+                };
+              };
+            };
+
+            // loop through thr TObjArrays
+            for(Int_t o=0; o<infile_thr_arr[s][g][p][e][f]->GetEntries(); o++)
+            {
+              // get run number "inrun"
+              sscanf(infile_thr_arr[s][g][p][e][f]->At(o)->GetName(),
+                "phi_thr_s%*d_g%*d_p%*d_e%*d_r%d",&inrun);
+              // linear hash --> typcast phi_dist's
+              for(Int_t h=0; h<rtree_ent; h++)
+              {
+                if(inrun == runnum_arr[h])
+                {
+                  phi_dist_thr[s][g][p][e][h] = (TH1D*) infile_thr_arr[s][g][p][e][f]->At(o);
+                  filter_thr[h]=true;
+                };
+              };
+            };
+
           };
         };
       };
@@ -180,8 +231,18 @@ void toa_add()
   // build final TObjArrays, one for each kinematic/geometric bin
   TFile * outfile = new TFile("phiset/all.root","RECREATE");
   outfile->cd();
-  TObjArray * combined_array[4][eta_bins][pt_bins][en_bins];
-  char combined_array_n[4][eta_bins][pt_bins][en_bins][200];
+  outfile->mkdir("sph");
+  outfile->mkdir("pi0");
+  outfile->mkdir("thr");
+  TObjArray * combined_sph_array[4][eta_bins][pt_bins][en_bins];
+  TObjArray * combined_pi0_array[4][eta_bins][pt_bins][en_bins];
+  TObjArray * combined_thr_array[4][eta_bins][pt_bins][en_bins];
+  char combined_sph_array_n[4][eta_bins][pt_bins][en_bins][200];
+  char combined_pi0_array_n[4][eta_bins][pt_bins][en_bins][200];
+  char combined_thr_array_n[4][eta_bins][pt_bins][en_bins][200];
+
+  printf("--------------------------------------------------------\n");
+
   for(Int_t s=0; s<4; s++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -190,24 +251,29 @@ void toa_add()
       {
         for(Int_t e=0; e<en_bins; e++)
         {
-          combined_array[s][g][p][e] = new TObjArray();
-          sprintf(combined_array_n[s][g][p][e],"phi_dist_s%d_g%d_p%d_e%d",s,g,p,e);
+          combined_sph_array[s][g][p][e] = new TObjArray();
+          combined_pi0_array[s][g][p][e] = new TObjArray();
+          combined_thr_array[s][g][p][e] = new TObjArray();
+
+          sprintf(combined_sph_array_n[s][g][p][e],"phi_dist_sph_s%d_g%d_p%d_e%d",s,g,p,e);
+          sprintf(combined_pi0_array_n[s][g][p][e],"phi_dist_pi0_s%d_g%d_p%d_e%d",s,g,p,e);
+          sprintf(combined_thr_array_n[s][g][p][e],"phi_dist_thr_s%d_g%d_p%d_e%d",s,g,p,e);
+
           for(Int_t r=0; r<rtree_ent; r++)
           {
-            printf("phi_dist[%d][%d][%d][%d][%d] @ %p\n",s,g,p,e,r,(void*)phi_dist[s][g][p][e][r]);
-            if(phi_dist[s][g][p][e][r]!=NULL)
-            {
-              if(filter[r]==1)
-              {
-                combined_array[s][g][p][e]->AddLast(phi_dist[s][g][p][e][r]);
-                //printf("phi_dist[%d][%d][%d][%d][%d] entries = %d\n",s,g,p,e,r,
-                  //phi_dist[s][g][p][e][r]->GetEntries());
-              };
-            };
+            printf("%d.%p %d.%p %d.%p\n",filter_sph[r],(void*)phi_dist_sph[s][g][p][e][r],
+                                         filter_pi0[r],(void*)phi_dist_pi0[s][g][p][e][r],
+                                         filter_thr[r],(void*)phi_dist_thr[s][g][p][e][r]);
+            if(phi_dist_sph[s][g][p][e][r]!=NULL && filter_sph[r]==1)
+              combined_sph_array[s][g][p][e]->AddLast(phi_dist_sph[s][g][p][e][r]);
+            if(phi_dist_pi0[s][g][p][e][r]!=NULL && filter_pi0[r]==1)
+              combined_pi0_array[s][g][p][e]->AddLast(phi_dist_pi0[s][g][p][e][r]);
+            if(phi_dist_thr[s][g][p][e][r]!=NULL && filter_thr[r]==1)
+              combined_thr_array[s][g][p][e]->AddLast(phi_dist_thr[s][g][p][e][r]);
           };
-          //printf("combined_array[%d][%d][%d][%d] @ %p\n",s,g,p,e,(void*)combined_array[s][g][p][e]);
-          //combined_array[s][g][p][e]->Print();
-          combined_array[s][g][p][e]->Write(combined_array_n[s][g][p][e],TObject::kSingleKey);
+          outfile->cd("/sph"); combined_sph_array[s][g][p][e]->Write(combined_sph_array_n[s][g][p][e],TObject::kSingleKey);
+          outfile->cd("/pi0"); combined_pi0_array[s][g][p][e]->Write(combined_pi0_array_n[s][g][p][e],TObject::kSingleKey);
+          outfile->cd("/thr"); combined_thr_array[s][g][p][e]->Write(combined_thr_array_n[s][g][p][e],TObject::kSingleKey);
         };
       };
     };

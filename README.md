@@ -52,6 +52,8 @@ Data set reduction
  - "loop_ReduceData" creates a condor batch file to run "ReduceData.C" on
    all root files in ../../Output
    --> NOTE: FOR RUN 12, THIS SCRIPT IMPLEMENTS A SHIFT FORWARD OF 1 BXING
+       YOU MUST LOOK AT OUTPUT OF BxingDistPi0.C TO VERIFY THIS SHIFT IS CORRECT
+       FOR THE RUNS BEING CONSIDERED
  - after reduction, run "Diagnostics.C" to look at dependences of kinematics on
    geometry; produces "diag.pdf" with various 2d histograms
  - you can also check for corruption by using GetRedsetEntries.C; if the tree

@@ -4,11 +4,11 @@
 # FILTERS OUT PROBLEMATIC REGION
 touch three.png
 rm three.png
-root -b -q -l 'Asym.C('\"runeven\"')'
+root -b -q -l 'Asym3.C('\"pi0\"','\"runeven\"')'
 root -b -q -l DrawThree.C
 mv -v spin{,_even}.root
 mv -v three{,_even}.png
-root -b -q -l 'Asym.C('\"runodd\"')'
+root -b -q -l 'Asym3.C('\"pi0\"','\"runodd\"')'
 root -b -q -l DrawThree.C
 mv -v spin{,_odd}.root
 mv -v three{,_odd}.png

@@ -18,7 +18,7 @@ void Count_pi0s()
 
   char pi0_cut[256];
   char cut[512];
-  strcpy(pi0_cut,"(TrigBits&0x200) && N12==2 && Z<0.8 && abs(M12-0.135)<0.1 && kicked==0");
+  strcpy(pi0_cut,"(TrigBits&0x200) && N12==2 && Z<0.8 && abs(M12-0.135)<0.1 && kicked==0 && Pt>=4 && Pt<=10");
 
   for(Int_t i=0; i<tr->GetEntries(); i++)
   {

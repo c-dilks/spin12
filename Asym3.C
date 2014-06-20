@@ -149,12 +149,15 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
 
             for(Int_t r=0; r<ARR_size; r++)
             {
-              if(!strcpy(jtype,"sph"))
+              if(!strcmp(jtype,"sph"))
                 sscanf(phi_dist_arr[0][g][p][e]->At(r)->GetName(), "phi_sph_s%*d_g%*d_p%*d_e%*d_r%d",&runnum);
-              if(!strcpy(jtype,"pi0"))
+              else if(!strcmp(jtype,"pi0"))
                 sscanf(phi_dist_arr[0][g][p][e]->At(r)->GetName(), "phi_pi0_s%*d_g%*d_p%*d_e%*d_r%d",&runnum);
-              if(!strcpy(jtype,"thr"))
+              else if(!strcmp(jtype,"thr"))
                 sscanf(phi_dist_arr[0][g][p][e]->At(r)->GetName(), "phi_thr_s%*d_g%*d_p%*d_e%*d_r%d",&runnum);
+
+              //printf("phi_dist_name=%s\n",phi_dist_arr[0][g][p][e]->At(r)->GetName());
+              //printf("jtype=%s runnum=%d\n",jtype,runnum);
 
               rellum = RD->Rellum(runnum,a,"zdc"); // note that asym no. = rellum no. needed for this asymmetry
               //rellum=1;     // for testing
