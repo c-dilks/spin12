@@ -2,4 +2,4 @@
 # runs double and single spin analyses, and draws output
 # FILTERS OUT PROBLEMATIC REGION
 root -b -q -l 'Asym3.C('\"pi0\"','\"runout\"',14136002,14139001)'
-root -b -q -l DrawThree.C
+root -b -q -l 'DrawThree.C('\"pi0\"')'

@@ -43,7 +43,7 @@ while read fill; do
   if [ $runcode -eq 1 ]; then
     echo $fill_low $fill_high
     root -b -q -l 'Asym3.C('\"pi0\"','\"fill\"','$fill_low','$fill_high')'
-    root -b -q -l 'DrawThree.C()'
+    root -b -q -l 'DrawThree.C('\"pi0\"')'
     root -b -q -l 'ChiSquareOfFit.C('$num')'
     mv -v spin.root study_fill/spin_$fill_low-$fill_high.root
     mv -v three.png study_fill/three_$fill_low-$fill_high.png

@@ -5,10 +5,10 @@
 touch three.png
 rm three.png
 root -b -q -l 'Asym3.C('\"pi0\"','\"runeven\"')'
-root -b -q -l DrawThree.C
+root -b -q -l 'DrawThree.C('\"pi0\"')'
 mv -v spin{,_even}.root
 mv -v three{,_even}.png
 root -b -q -l 'Asym3.C('\"pi0\"','\"runodd\"')'
-root -b -q -l DrawThree.C
+root -b -q -l 'DrawThree.C('\"pi0\"')'
 mv -v spin{,_odd}.root
 mv -v three{,_odd}.png

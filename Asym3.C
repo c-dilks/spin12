@@ -125,6 +125,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   TH1D * phi_dist_den[asym_bins][4][eta_bins][pt_bins][en_bins];
   char phi_dist_num_n[asym_bins][4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_den_n[asym_bins][4][eta_bins][pt_bins][en_bins][128];
+  Double_t yield[4][eta_bins][pt_bins][en_bins]; // counts yields (only for a==3); used for error analysis
   Int_t runnum;
   Float_t rellum,polar_b,polar_y,weight_num,weight_den;
   Int_t fill,pattern;
@@ -140,6 +141,8 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
         {
           for(Int_t e=0; e<en_bins; e++)
           {
+            if(a==3) yield[s][g][p][e] = 0; // initialise yield counter
+
             sprintf(phi_dist_num_n[a][s][g][p][e],"phi_num_a%d_s%d_g%d_p%d_e%d",a,s,g,p,e);
             sprintf(phi_dist_den_n[a][s][g][p][e],"phi_den_a%d_s%d_g%d_p%d_e%d",a,s,g,p,e);
             phi_dist_num[a][s][g][p][e] = new TH1D(phi_dist_num_n[a][s][g][p][e],phi_dist_num_n[a][s][g][p][e],
@@ -222,6 +225,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
                 {
                   phi_dist_num[a][s][g][p][e]->Add((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)),weight_num);
                   phi_dist_den[a][s][g][p][e]->Add((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)),weight_den);
+                  if(a==3) yield[s][g][p][e] += ((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)))->GetEntries(); // increment yield counter
                 };
               };
             };
@@ -435,7 +439,9 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           if(asym[a][0][p][e]->GetFunction("pol0"))
           {
             val_en[a][p][en_dep_cnt[a][p]] = asym[a][0][p][e]->GetFunction("pol0")->GetParameter(0);
-            err_en[a][p][en_dep_cnt[a][p]] = asym[a][0][p][e]->GetFunction("pol0")->GetParError(0);
+            err_en[a][p][en_dep_cnt[a][p]] = asym[a][0][p][e]->GetFunction("pol0")->GetParError(0); // fit error
+            //err_en[a][p][en_dep_cnt[a][p]] = 
+              //1/(0.55*0.55) * 1/sqrt(yield[0][0][p][e]+yield[1][0][p][e]+yield[2][0][p][e]+yield[3][0][p][e]); // NEED TO PUT IN POLARIZATION!!!!
             cent_en[a][p][en_dep_cnt[a][p]] = en_div[e] + ((en_div[e+1]-en_div[e])/2.0);
             width_en[a][p][en_dep_cnt[a][p]] = (en_div[e+1]-en_div[e])/2.0;
             en_dep_cnt[a][p]++;
@@ -458,7 +464,9 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           if(asym[a][0][p][e]->GetFunction("pol0"))
           {
             val_pt[a][e][pt_dep_cnt[a][e]] = asym[a][0][p][e]->GetFunction("pol0")->GetParameter(0);
-            err_pt[a][e][pt_dep_cnt[a][e]] = asym[a][0][p][e]->GetFunction("pol0")->GetParError(0);
+            err_pt[a][e][pt_dep_cnt[a][e]] = asym[a][0][p][e]->GetFunction("pol0")->GetParError(0); // fit error
+            //err_pt[a][e][pt_dep_cnt[a][e]] = 
+              //1/(0.55*0.55) * 1/sqrt(yield[0][0][p][e]+yield[1][0][p][e]+yield[2][0][p][e]+yield[3][0][p][e]); // NEED TO PUT IN POLARIZATION!!!!
             cent_pt[a][e][pt_dep_cnt[a][e]] = pt_div[p] + ((pt_div[p+1]-pt_div[p])/2.0);
             width_pt[a][e][pt_dep_cnt[a][e]] = (pt_div[p+1]-pt_div[p])/2.0;
             pt_dep_cnt[a][e]++;

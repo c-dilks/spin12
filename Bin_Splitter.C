@@ -85,6 +85,8 @@ void Bin_Splitter()
   }
   else
   {
+    ///*
+    // carl's suggestion
     pt_bins=7;
     printf("export PT_BINS=%d\n",pt_bins);
     printf("export PT_DIV_0=%f\n",pt_low);
@@ -95,6 +97,15 @@ void Bin_Splitter()
     printf("export PT_DIV_5=%f\n",6);
     printf("export PT_DIV_6=%f\n",8);
     printf("export PT_DIV_7=%f\n",pt_high);
+    //*/
+    /*
+    // low vs. high pT
+    pt_bins=2;
+    printf("export PT_BINS=%d\n",pt_bins);
+    printf("export PT_DIV_0=%f\n",pt_low);
+    printf("export PT_DIV_1=%f\n",8);
+    printf("export PT_DIV_2=%f\n",pt_high);
+    */
   };
 
     

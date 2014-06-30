@@ -2,11 +2,11 @@
 // e.g., pt vs. eta
 // --> outputs all plots to diag.pdf
 
-void Diagnostics(const char jtype="pi0")
+void Diagnostics()
 {
   gSystem->Load("src/RunData12.so");
   RunData12 * RD = new RunData12();
-  const Int_t NBINS=50; // NUMBER OF BINS
+  const Int_t NBINS=100; // NUMBER OF BINS
 
   // open chain
   TChain * tr = new TChain("str");
@@ -65,18 +65,33 @@ void Diagnostics(const char jtype="pi0")
   };
 
 
-  TH2F * pt_vs_eta = new TH2F("pt_vs_eta","p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
-  TH2F * en_vs_eta = new TH2F("en_vs_eta","E_{#gamma#gamma} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
-  TH2F * z_vs_eta = new TH2F("z_vs_eta","Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
-  TH2F * pt_vs_phi = new TH2F("pt_vs_phi","p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
-  TH2F * en_vs_phi = new TH2F("en_vs_phi","E_{#gamma#gamma} vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
-  TH2F * z_vs_phi = new TH2F("z_vs_phi","Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
-  TH2F * eta_vs_phi = new TH2F("eta_vs_phi","#eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
-  TH2F * en_vs_pt = new TH2F("en_vs_pt","E_{#gamma#gamma} vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+  TH2F * sph_pt_vs_eta = new TH2F("sph_pt_vs_eta","single #gamma :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2F * sph_en_vs_eta = new TH2F("sph_en_vs_eta","single #gamma :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2F * sph_pt_vs_phi = new TH2F("sph_pt_vs_phi","single #gamma :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2F * sph_en_vs_phi = new TH2F("sph_en_vs_phi","single #gamma :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2F * sph_eta_vs_phi = new TH2F("sph_eta_vs_phi","single #gamma :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2F * sph_en_vs_pt = new TH2F("sph_en_vs_pt","single #gamma :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH1F * mass_dist = new TH1F("mass_dist","M_{#gamma#gamma} distribution (no #pi^{0} cut)",NBINS,0,1);
-  TH1F * z_dist = new TH1F("z_dist","Z distribution (no #pi^{0} cut)",NBINS,0,1);
-  TH1F * trig_dist = new TH1F("trig_dist","TrigBits distribution (no #pi^{0} cut)",NBINS,7500,33500);
+  TH2F * pi0_pt_vs_eta = new TH2F("pi0_pt_vs_eta","#pi^{0} :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2F * pi0_en_vs_eta = new TH2F("pi0_en_vs_eta","#pi^{0} :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2F * pi0_pt_vs_phi = new TH2F("pi0_pt_vs_phi","#pi^{0} :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2F * pi0_en_vs_phi = new TH2F("pi0_en_vs_phi","#pi^{0} :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2F * pi0_eta_vs_phi = new TH2F("pi0_eta_vs_phi","#pi^{0} :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2F * pi0_en_vs_pt = new TH2F("pi0_en_vs_pt","#pi^{0} :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+
+  TH2F * thr_pt_vs_eta = new TH2F("thr_pt_vs_eta","N_{#gamma}>2 :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2F * thr_en_vs_eta = new TH2F("thr_en_vs_eta","N_{#gamma}>2 :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2F * thr_pt_vs_phi = new TH2F("thr_pt_vs_phi","N_{#gamma}>2 :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2F * thr_en_vs_phi = new TH2F("thr_en_vs_phi","N_{#gamma}>2 :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2F * thr_eta_vs_phi = new TH2F("thr_eta_vs_phi","N_{#gamma}>2 :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2F * thr_en_vs_pt = new TH2F("thr_en_vs_pt","N_{#gamma}>2 :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+
+  TH2F * pi0_z_vs_eta = new TH2F("pi0_z_vs_eta","#pi^{0} :: Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
+  TH2F * pi0_z_vs_phi = new TH2F("pi0_z_vs_phi","#pi^{0} :: Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
+
+  TH1F * mass_dist = new TH1F("mass_dist","M_{#gamma#gamma} distribution (N12==2, jet1, M12>0, Z<0.8, kicked==0)",NBINS,0,1);
+  TH1F * z_dist = new TH1F("z_dist","Z distribution (N12==2, jet1, abs(M12-0.135)<0.1, kicked==0)",NBINS,0,1);
+  TH1F * trig_dist = new TH1F("trig_dist","TrigBits distribution (N12==2)",NBINS,7500,33500);
 
   char cut[256];
   sprintf(cut,"abs(M12-0.135)<0.1 && Z<0.8 && (TrigBits&0x200) && kicked==0 && isConsistent==1 && b_pol*y_pol!=0");
@@ -96,28 +111,52 @@ void Diagnostics(const char jtype="pi0")
     // rellum / pol cut
     if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
     {
-      mass_dist->Fill(M12);
-      z_dist->Fill(Z);
-      trig_dist->Fill(TrigBits);
+      // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
+      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) mass_dist->Fill(M12);
+      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
+      if(fabs(N12-2)<0.01) trig_dist->Fill(TrigBits);
 
-      // n-photon cut
-      //if(N12==1 && kicked==0 && isConsistent==1 && b_pol*y_pol!=0)
+      // single photon cut
+      if(fabs(N12-1)<0.01)
+      {
+        sph_pt_vs_eta->Fill(Eta,Pt);
+        sph_en_vs_eta->Fill(Eta,E12);
+        sph_pt_vs_phi->Fill(Phi,Pt);
+        sph_en_vs_phi->Fill(Phi,E12);
+        sph_eta_vs_phi->Fill(Phi,Eta);
+        sph_en_vs_pt->Fill(Pt,E12);
+      };
+
       // pi0 cut
       if( (TrigBits&0x200) && fabs(N12-2)<0.01 && Z<0.8 && fabs(M12-0.135)<0.1)
       {
-        pt_vs_eta->Fill(Eta,Pt);
-        en_vs_eta->Fill(Eta,E12);
-        z_vs_eta->Fill(Eta,Z);
-        pt_vs_phi->Fill(Phi,Pt);
-        en_vs_phi->Fill(Phi,E12);
-        z_vs_phi->Fill(Phi,Z);
-        eta_vs_phi->Fill(Phi,Eta);
-        en_vs_pt->Fill(Pt,E12);
+        pi0_pt_vs_eta->Fill(Eta,Pt);
+        pi0_en_vs_eta->Fill(Eta,E12);
+        pi0_pt_vs_phi->Fill(Phi,Pt);
+        pi0_en_vs_phi->Fill(Phi,E12);
+        pi0_eta_vs_phi->Fill(Phi,Eta);
+        pi0_en_vs_pt->Fill(Pt,E12);
+
+        pi0_z_vs_eta->Fill(Eta,Z);
+        pi0_z_vs_phi->Fill(Phi,Z);
+      };
+
+      // three or more photons cut
+      if(N12>2.5)
+      {
+        thr_pt_vs_eta->Fill(Eta,Pt);
+        thr_en_vs_eta->Fill(Eta,E12);
+        thr_pt_vs_phi->Fill(Phi,Pt);
+        thr_en_vs_phi->Fill(Phi,E12);
+        thr_eta_vs_phi->Fill(Phi,Eta);
+        thr_en_vs_pt->Fill(Pt,E12);
       };
     };
   };
 
 
+  /*
+  // draw output -- MOVED TO DrawDiagnostics.C
   gStyle->SetOptStat(0);
 
   TCanvas * cc0 = new TCanvas("cc0","cc0",1000,1200);
@@ -163,6 +202,39 @@ void Diagnostics(const char jtype="pi0")
   printf("Pt range: %f -- %f\n",Pt_min,Pt_max);
   printf("Eta range: %f -- %f\n",Eta_min,Eta_max);
   printf("Phi range: %f -- %f\n",Phi_min,Phi_max);
+  */
+
+  // write output
+  TFile * outfile = new TFile("diag.root","RECREATE");
+
+  mass_dist->Write();
+  z_dist->Write();
+  trig_dist->Write();
+
+  sph_pt_vs_eta->Write();
+  sph_en_vs_eta->Write();
+  sph_pt_vs_phi->Write();
+  sph_en_vs_phi->Write();
+  sph_eta_vs_phi->Write();
+  sph_en_vs_pt->Write();
+
+  pi0_pt_vs_eta->Write();
+  pi0_en_vs_eta->Write();
+  pi0_pt_vs_phi->Write();
+  pi0_en_vs_phi->Write();
+  pi0_eta_vs_phi->Write();
+  pi0_en_vs_pt->Write();
+
+  thr_pt_vs_eta->Write();
+  thr_en_vs_eta->Write();
+  thr_pt_vs_phi->Write();
+  thr_en_vs_phi->Write();
+  thr_eta_vs_phi->Write();
+  thr_en_vs_pt->Write();
+
+  pi0_z_vs_eta->Write();
+  pi0_z_vs_phi->Write();
+
 
 }
   
