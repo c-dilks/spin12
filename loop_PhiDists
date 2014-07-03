@@ -29,6 +29,10 @@
 #echo "en=$en"
 #echo ""
 
+echo "removing phiset/*.root in 3 seconds..."
+sleep 3
+rm -r phiset/*.root
+
 
 job="phi.bat"
 > $job
