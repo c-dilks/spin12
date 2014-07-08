@@ -134,11 +134,36 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   char phi_dist_num_e_n[asym_bins][4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_den_e_n[asym_bins][4][eta_bins][pt_bins][en_bins][128];
   Double_t yield[4][eta_bins][pt_bins][en_bins]; // counts yields (only for a==3); used for error analysis
+  Double_t scarat_num[asym_bins][4][eta_bins][pt_bins][en_bins]; // zdc/vpd scaler ratio; weighted by P
+  Double_t scarat_den[asym_bins][4][eta_bins][pt_bins][en_bins]; // zdc/vpd scaler ratio; weighted by P^2
   Int_t runnum;
-  Float_t rellum,polar_b,polar_y,weight_num,weight_den,weight_num_e,weight_den_e;
+  Float_t rellum,polar_b,polar_y;
+  Float_t weight_num,weight_den; // weight for asymmetry (MLM for A_LL)
+  Float_t weight_num_e,weight_den_e; // weight for statistical error (by-product of MLM for A_LL);
+  Float_t weight_num_s,weight_den_s; // weight for systematic error (MLM for R_LL)
+  Float_t scarat;
   Int_t fill,pattern;
   Bool_t isConsistent;
   gROOT->ProcessLine(".! touch runlist; rm runlist; touch runlist");
+  for(Int_t s=0; s<4; s++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        for(Int_t e=0; e<en_bins; e++)
+        {
+          // initialise arrays
+          yield[s][g][p][e] = 0;
+          for(Int_t a=1; a<asym_bins; a++)
+          {
+            scarat_num[a][s][g][p][e] = 0;
+            scarat_den[a][s][g][p][e] = 0;
+          };
+        };
+      };
+    };
+  };
   for(Int_t a=1; a<asym_bins; a++)
   {
     for(Int_t s=0; s<4; s++)
@@ -177,6 +202,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               //printf("jtype=%s runnum=%d\n",jtype,runnum);
 
               rellum = RD->Rellum(runnum,a,"zdc"); // note that asym no. = rellum no. needed for this asymmetry
+              scarat = RD->Scarat(runnum,"x",s);
               //rellum=1;     // for testing
               polar_b = RD->BluePol(runnum);
               polar_y = RD->YellPol(runnum);
@@ -192,12 +218,16 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
                 weight_den = pow(polar_b * polar_y, 2);
                 weight_num_e = pow(polar_b * polar_y, 2);
                 weight_den_e = pow(polar_b * polar_y, 2);
+                weight_num_s = polar_b * polar_y;
+                weight_den_s = pow(polar_b * polar_y, 2);
                 if(s==1 || s==2) 
                 {
                   weight_num *= rellum;
                   weight_den *= rellum;
                   weight_num_e *= pow(rellum, 2);
                   weight_den_e *= rellum;
+                  //weight_num_s *= rellum; // should we do this?
+                  //weight_den_s *= rellum;
                 };
               }
               else if(a==1)
@@ -206,12 +236,16 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
                 weight_den = pow(polar_y, 2);
                 weight_num_e = pow(polar_y, 2);
                 weight_den_e = pow(polar_y, 2);
+                weight_num_s = polar_y;
+                weight_den_s = pow(polar_y, 2);
                 if(s==0 || s==2) 
                 {
                   weight_num *= rellum;
                   weight_den *= rellum;
                   weight_num_e *= pow(rellum, 2);
                   weight_den_e *= rellum;
+                  //weight_num_s *= rellum; // should we do this?
+                  //weight_den_s *= rellum;
                 };
               }
               else if(a==2)
@@ -220,12 +254,16 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
                 weight_den = pow(polar_b, 2);
                 weight_num_e = pow(polar_b, 2);
                 weight_den_e = pow(polar_b, 2);
+                weight_num_s = polar_b;
+                weight_den_s = pow(polar_b, 2);
                 if(s==0 || s==1) 
                 {
                   weight_num *= rellum;
                   weight_den *= rellum;
                   weight_num_e *= pow(rellum, 2);
                   weight_den_e *= rellum;
+                  //weight_num_s *= rellum; // should we do this?
+                  //weight_den_s *= rellum;
                 };
               };
 
@@ -254,6 +292,8 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
                   phi_dist_num_e[a][s][g][p][e]->Add((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)),weight_num_e);
                   phi_dist_den_e[a][s][g][p][e]->Add((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)),weight_den_e);
                   if(a==3) yield[s][g][p][e] += ((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)))->GetEntries(); // increment yield counter
+                  scarat_num[a][s][g][p][e] += scarat * weight_num_s;
+                  scarat_den[a][s][g][p][e] += scarat * weight_den_s;
                 };
               };
             };
@@ -287,6 +327,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   TH1D * asym[asym_bins][eta_bins][pt_bins][en_bins]; // asym = numer / denom
   TH1D * asym_e[asym_bins][eta_bins][pt_bins][en_bins]; // asym_e = numer_e_sqrt / denom_e
   Int_t asym_pts[asym_bins][eta_bins][pt_bins][en_bins]; // number of points in asym
+
   char dist_ll_num_n[asym_bins][eta_bins][pt_bins][en_bins][128];
   char dist_rr_num_n[asym_bins][eta_bins][pt_bins][en_bins][128];
   char dist_ll_den_n[asym_bins][eta_bins][pt_bins][en_bins][128];
@@ -303,6 +344,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   char asym_n[asym_bins][eta_bins][pt_bins][en_bins][128];
   char asym_t[asym_bins][eta_bins][pt_bins][en_bins][256];
   char asym_e_n[asym_bins][eta_bins][pt_bins][en_bins][128];
+
   Float_t p0,p0e,chi2,ndf;
   Float_t bc[4];
   Float_t bcent;
@@ -315,6 +357,15 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   Float_t asym_max[asym_bins][eta_bins][pt_bins][en_bins];
   Float_t asym_min[asym_bins][eta_bins][pt_bins][en_bins];
   char var_str[16]; strcpy(var_str,"#phi");
+
+  Double_t RLL_ll_num[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_rr_num[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_ll_den[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_rr_den[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_numer[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_denom[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t RLL_asym[asym_bins][eta_bins][pt_bins][en_bins];
+
   for(Int_t a=1; a<asym_bins; a++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -327,6 +378,13 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           asym_value_cnt[a][g][p][e]=0;
           asym_max[a][g][p][e]=0;
           asym_min[a][g][p][e]=0;
+          RLL_ll_num[a][g][p][e]=0;
+          RLL_rr_num[a][g][p][e]=0;
+          RLL_ll_den[a][g][p][e]=0;
+          RLL_rr_den[a][g][p][e]=0;
+          RLL_numer[a][g][p][e]=0;
+          RLL_denom[a][g][p][e]=0;
+          RLL_asym[a][g][p][e]=0;
         };
       };
     };
@@ -402,7 +460,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           asym_e[a][g][p][e] = new TH1D(asym_e_n[a][g][p][e],
               asym_e_n[a][g][p][e],phi_bins,phi_low,phi_high);
 
-          // build left & right tems
+          // build left & right terms
           if(a==3)
           {
             dist_ll_num[a][g][p][e]->Add(phi_dist_num[a][0][g][p][e],phi_dist_num[a][3][g][p][e],1.0,1.0);
@@ -413,6 +471,10 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
             dist_rr_num_e[a][g][p][e]->Add(phi_dist_num_e[a][1][g][p][e],phi_dist_num_e[a][2][g][p][e],1.0,1.0);
             dist_ll_den_e[a][g][p][e]->Add(phi_dist_den_e[a][0][g][p][e],phi_dist_den_e[a][3][g][p][e],1.0,1.0);
             dist_rr_den_e[a][g][p][e]->Add(phi_dist_den_e[a][1][g][p][e],phi_dist_den_e[a][2][g][p][e],1.0,1.0);
+            RLL_ll_num[a][g][p][e] = scarat_num[a][0][g][p][e] + scarat_num[a][3][g][p][e];
+            RLL_rr_num[a][g][p][e] = scarat_num[a][1][g][p][e] + scarat_num[a][2][g][p][e];
+            RLL_ll_den[a][g][p][e] = scarat_den[a][0][g][p][e] + scarat_den[a][3][g][p][e];
+            RLL_rr_den[a][g][p][e] = scarat_den[a][1][g][p][e] + scarat_den[a][2][g][p][e];
           }
           else if(a==1)
           {
@@ -424,6 +486,10 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
             dist_rr_num_e[a][g][p][e]->Add(phi_dist_num_e[a][0][g][p][e],phi_dist_num_e[a][2][g][p][e],1.0,1.0);
             dist_ll_den_e[a][g][p][e]->Add(phi_dist_den_e[a][1][g][p][e],phi_dist_den_e[a][3][g][p][e],1.0,1.0);
             dist_rr_den_e[a][g][p][e]->Add(phi_dist_den_e[a][0][g][p][e],phi_dist_den_e[a][2][g][p][e],1.0,1.0);
+            RLL_ll_num[a][g][p][e] = scarat_num[a][1][g][p][e] + scarat_num[a][3][g][p][e];
+            RLL_rr_num[a][g][p][e] = scarat_num[a][0][g][p][e] + scarat_num[a][2][g][p][e];
+            RLL_ll_den[a][g][p][e] = scarat_den[a][1][g][p][e] + scarat_den[a][3][g][p][e];
+            RLL_rr_den[a][g][p][e] = scarat_den[a][0][g][p][e] + scarat_den[a][2][g][p][e];
           }
           else if(a==2)
           {
@@ -435,13 +501,19 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
             dist_rr_num_e[a][g][p][e]->Add(phi_dist_num_e[a][0][g][p][e],phi_dist_num_e[a][1][g][p][e],1.0,1.0);
             dist_ll_den_e[a][g][p][e]->Add(phi_dist_den_e[a][2][g][p][e],phi_dist_den_e[a][3][g][p][e],1.0,1.0);
             dist_rr_den_e[a][g][p][e]->Add(phi_dist_den_e[a][0][g][p][e],phi_dist_den_e[a][1][g][p][e],1.0,1.0);
+            RLL_ll_num[a][g][p][e] = scarat_num[a][2][g][p][e] + scarat_num[a][3][g][p][e];
+            RLL_rr_num[a][g][p][e] = scarat_num[a][0][g][p][e] + scarat_num[a][1][g][p][e];
+            RLL_ll_den[a][g][p][e] = scarat_den[a][2][g][p][e] + scarat_den[a][3][g][p][e];
+            RLL_rr_den[a][g][p][e] = scarat_den[a][0][g][p][e] + scarat_den[a][1][g][p][e];
           }
 
           // build numer and denom
           numer[a][g][p][e]->Add(dist_ll_num[a][g][p][e],dist_rr_num[a][g][p][e],1.0,-1.0);
           denom[a][g][p][e]->Add(dist_ll_den[a][g][p][e],dist_rr_den[a][g][p][e],1.0,1.0);
-          numer_e[a][g][p][e]->Add(dist_ll_num_e[a][g][p][e],dist_rr_num_e[a][g][p][e],1.0,1.0);
+          numer_e[a][g][p][e]->Add(dist_ll_num_e[a][g][p][e],dist_rr_num_e[a][g][p][e],1.0,1.0); // n.b.: ll & rr summed
           denom_e[a][g][p][e]->Add(dist_ll_den_e[a][g][p][e],dist_rr_den_e[a][g][p][e],1.0,1.0);
+          RLL_numer[a][g][p][e] = RLL_ll_num[a][g][p][e] - RLL_rr_num[a][g][p][e];
+          RLL_denom[a][g][p][e] = RLL_ll_den[a][g][p][e] + RLL_rr_den[a][g][p][e];
           
           // numer_e_sqrt = sqrt(numer_e)
           for(Int_t b=1; b<=numer_e[a][g][p][e]->GetNbinsX(); b++)
@@ -453,6 +525,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
 
           asym[a][g][p][e]->Divide(numer[a][g][p][e],denom[a][g][p][e],1.0,1.0);
           asym_e[a][g][p][e]->Divide(numer_e_sqrt[a][g][p][e],denom_e[a][g][p][e],1.0,1.0);
+          RLL_asym[a][g][p][e] = RLL_numer[a][g][p][e] / RLL_denom[a][g][p][e];
 
           printf(asym[a][g][p][e]->GetTitle());
           printf("\n");
@@ -519,30 +592,46 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
 
 
   // kinematic dependence plots
-  TGraphErrors * en_dep[asym_bins][eta_bins][pt_bins]; // en dependent plots, one for each pt bin
+  TGraphErrors * en_dep[asym_bins][eta_bins][pt_bins]; // en dependent plots, one for each pt bin (statistical errors)
   TGraphErrors * pt_dep[asym_bins][eta_bins][en_bins]; // pt dependent plots, one for each en bin
+  TGraphErrors * en_sys[asym_bins][eta_bins][pt_bins]; // en dependent plots, one for each pt bin (systematic errors)
+  TGraphErrors * pt_sys[asym_bins][eta_bins][en_bins]; // pt dependent plots, one for each en bin
   char en_dep_t[asym_bins][eta_bins][pt_bins][256];
   char pt_dep_t[asym_bins][eta_bins][en_bins][256];
-  Int_t en_dep_cnt[asym_bins][eta_bins][pt_bins]; // en dependent plots point counter
-  Int_t pt_dep_cnt[asym_bins][eta_bins][en_bins]; // pt dependent plots point counter
+  char en_sys_t[asym_bins][eta_bins][pt_bins][256];
+  char pt_sys_t[asym_bins][eta_bins][en_bins][256];
+  Int_t en_dep_cnt[asym_bins][eta_bins][pt_bins]; // point counter
+  Int_t pt_dep_cnt[asym_bins][eta_bins][en_bins];
+  Int_t en_sys_cnt[asym_bins][eta_bins][pt_bins];
+  Int_t pt_sys_cnt[asym_bins][eta_bins][en_bins];
   for(Int_t a=1; a<asym_bins; a++)
   {
     for(Int_t g=0; g<eta_bins; g++)
     {
-      for(Int_t p=0; p<pt_bins; p++) en_dep_cnt[a][g][p]=0;
-      for(Int_t e=0; e<en_bins; e++) pt_dep_cnt[a][g][e]=0;
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        en_dep_cnt[a][g][p]=0;
+        en_sys_cnt[a][g][p]=0;
+      };
+      for(Int_t e=0; e<en_bins; e++) 
+      {
+        pt_dep_cnt[a][g][e]=0;
+        pt_sys_cnt[a][g][e]=0;
+      };
     };
   };
 
-  Double_t val_en[asym_bins][eta_bins][pt_bins][en_bins];     // arrays for en dependent plots, one 
-  Double_t err_en[asym_bins][eta_bins][pt_bins][en_bins];     // for each pt bin
-  Double_t cent_en[asym_bins][eta_bins][pt_bins][en_bins];
-  Double_t width_en[asym_bins][eta_bins][pt_bins][en_bins];
+  Double_t val_en[asym_bins][eta_bins][pt_bins][en_bins];     // arrays for en dependent plots, one for each pt bin
+  Double_t err_en[asym_bins][eta_bins][pt_bins][en_bins];     // (statistical error)
+  Double_t sys_en[asym_bins][eta_bins][pt_bins][en_bins];     // (systematic error)
+  Double_t cent_en[asym_bins][eta_bins][pt_bins][en_bins];    // (energy bin center)
+  Double_t width_en[asym_bins][eta_bins][pt_bins][en_bins];   // (energy bin width)
 
   Double_t val_pt[asym_bins][eta_bins][en_bins][pt_bins];     // arrays for pt dependent plots, one
-  Double_t err_pt[asym_bins][eta_bins][en_bins][pt_bins];     // for each en bin
-  Double_t cent_pt[asym_bins][eta_bins][en_bins][pt_bins];
-  Double_t width_pt[asym_bins][eta_bins][en_bins][pt_bins];
+  Double_t err_pt[asym_bins][eta_bins][en_bins][pt_bins];     // (statistical error)
+  Double_t sys_pt[asym_bins][eta_bins][en_bins][pt_bins];     // (systematic error)
+  Double_t cent_pt[asym_bins][eta_bins][en_bins][pt_bins];    // (pt bin center)
+  Double_t width_pt[asym_bins][eta_bins][en_bins][pt_bins];   // (pt bin width)
 
   // en dependent points for each pt bin
   for(Int_t a=1; a<asym_bins; a++)
@@ -560,16 +649,20 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               err_en[a][g][p][en_dep_cnt[a][g][p]] = asym[a][g][p][e]->GetFunction("pol0")->GetParError(0);
             // estimated statistical error
               //err_en[a][g][p][en_dep_cnt[a][g][p]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
+            sys_en[a][g][p][en_dep_cnt[a][g][p]] = fabs(RLL_asym[a][g][p][e]);
             cent_en[a][g][p][en_dep_cnt[a][g][p]] = en_div[e] + ((en_div[e+1]-en_div[e])/2.0);
             width_en[a][g][p][en_dep_cnt[a][g][p]] = (en_div[e+1]-en_div[e])/2.0;
             en_dep_cnt[a][g][p]++;
           };
         };
         en_dep[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],err_en[a][g][p]);
+        en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],sys_en[a][g][p]);
         sprintf(en_dep_t[a][g][p],"%s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                 pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
         en_dep[a][g][p]->SetTitle(en_dep_t[a][g][p]);
+        en_sys[a][g][p]->SetTitle(en_dep_t[a][g][p]);
         en_dep[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
+        en_sys[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
       };
     };
   };
@@ -590,16 +683,20 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               err_pt[a][g][e][pt_dep_cnt[a][g][e]] = asym[a][g][p][e]->GetFunction("pol0")->GetParError(0);
             // estimated statistical error
               //err_pt[a][g][e][pt_dep_cnt[a][g][e]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
+            sys_pt[a][g][e][pt_dep_cnt[a][g][e]] = fabs(RLL_asym[a][g][p][e]);
             cent_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_div[p] + ((pt_div[p+1]-pt_div[p])/2.0);
             width_pt[a][g][e][pt_dep_cnt[a][g][e]] = (pt_div[p+1]-pt_div[p])/2.0;
             pt_dep_cnt[a][g][e]++;
           };
         };
         pt_dep[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],err_pt[a][g][e]);
+        pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],sys_pt[a][g][e]);
         sprintf(pt_dep_t[a][g][e],"%s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                 en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
         pt_dep[a][g][e]->SetTitle(pt_dep_t[a][g][e]);
+        pt_sys[a][g][e]->SetTitle(pt_dep_t[a][g][e]);
         pt_dep[a][g][e]->GetXaxis()->SetTitle("p_{T} (GeV)");
+        pt_sys[a][g][e]->GetXaxis()->SetTitle("p_{T} (GeV)");
       };
     };
   };
@@ -614,6 +711,10 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
         en_dep[a][g][p]->SetMarkerStyle(kFullCircle);
         en_dep[a][g][p]->SetMarkerColor(kRed);
         en_dep[a][g][p]->GetYaxis()->SetTitleOffset(1.5);
+        en_sys[a][g][p]->GetYaxis()->SetTitle(asym_title[a]);
+        en_sys[a][g][p]->SetMarkerStyle(kFullCircle);
+        en_sys[a][g][p]->SetMarkerColor(kRed);
+        en_sys[a][g][p]->GetYaxis()->SetTitleOffset(1.5);
       };
       for(Int_t e=0; e<en_bins; e++)
       {
@@ -621,6 +722,10 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
         pt_dep[a][g][e]->SetMarkerStyle(kFullCircle);
         pt_dep[a][g][e]->SetMarkerColor(kRed);
         pt_dep[a][g][e]->GetYaxis()->SetTitleOffset(1.5);
+        pt_sys[a][g][e]->GetYaxis()->SetTitle(asym_title[a]);
+        pt_sys[a][g][e]->SetMarkerStyle(kFullCircle);
+        pt_sys[a][g][e]->SetMarkerColor(kRed);
+        pt_sys[a][g][e]->GetYaxis()->SetTitleOffset(1.5);
       };
     };
   };
@@ -634,6 +739,8 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   outfile->mkdir("A_L_yellow");
   char en_dep_n[asym_bins][eta_bins][pt_bins][32];
   char pt_dep_n[asym_bins][eta_bins][en_bins][32];
+  char en_sys_n[asym_bins][eta_bins][pt_bins][32];
+  char pt_sys_n[asym_bins][eta_bins][en_bins][32];
   for(Int_t a=1; a<asym_bins; a++)
   {
     if(a==3) outfile->cd("/A_LL");
@@ -650,6 +757,25 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
       {
         sprintf(pt_dep_n[a][g][e],"pt_dep_a%d_g%d_e%d",a,g,e);
         pt_dep[a][g][e]->Write(pt_dep_n[a][g][e]);
+      };
+    };
+  };
+  for(Int_t a=1; a<asym_bins; a++)
+  {
+    if(a==3) outfile->cd("/A_LL");
+    else if(a==1) outfile->cd("/A_L_yellow");
+    else if(a==2) outfile->cd("/A_L_blue");
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        sprintf(en_sys_n[a][g][p],"en_sys_a%d_g%d_p%d",a,g,p);
+        en_sys[a][g][p]->Write(en_sys_n[a][g][p]);
+      };
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        sprintf(pt_sys_n[a][g][e],"pt_sys_a%d_g%d_e%d",a,g,e);
+        pt_sys[a][g][e]->Write(pt_sys_n[a][g][e]);
       };
     };
   };

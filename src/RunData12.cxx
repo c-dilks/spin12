@@ -76,6 +76,9 @@ void RunData12::Construct(char * spindir0)
     rtree_tr->SetBranchAddress(R_vpd_err_name[r],&(R_vpd_err[r]));
   };
 
+  rtree_tr->SetBranchAddress("scarat",scarat_arr);
+
+
 
   // set counts tree branch addresses
   counts_tr->SetBranchAddress("i",&i_counts);
@@ -202,7 +205,6 @@ Int_t RunData12::HashRun(Int_t runnum0)
 
 Float_t RunData12::Rellum(Int_t runnum0, Int_t rellumi, char * detector)
 {
-  Int_t cbit;
   Int_t index = HashRun(runnum0);
   if(index>=0)
   {
@@ -222,7 +224,6 @@ Float_t RunData12::Rellum(Int_t runnum0, Int_t rellumi, char * detector)
 
 Float_t RunData12::RellumErr(Int_t runnum0, Int_t rellumi, char * detector)
 {
-  Int_t cbit;
   Int_t index = HashRun(runnum0);
   if(index>=0)
   {
@@ -331,3 +332,35 @@ Int_t RunData12::Pattern(Int_t runnum0)
     return pattern_map[fill0-fill_thou];
   else return 0;
 };
+
+
+Float_t RunData12::Scarat(Int_t runnum0, char * bit_combo, Int_t spinbit)
+{
+  Int_t index = HashRun(runnum0);
+  Int_t bit_int;
+  if(index>=0)
+  {
+    rtree_tr->GetEntry(index);
+    if(!strcmp(bit_combo,"e")) bit_int = 0;
+    else if(!strcmp(bit_combo,"w")) bit_int = 1;
+    else if(!strcmp(bit_combo,"x")) bit_int = 2;
+    else 
+    {
+      fprintf(stderr,"ERROR: incorrect scaler bit combination (must be e,w,x)\n");
+      return 0;
+    };
+
+    if(spinbit>=0 && spinbit<=3) return scarat_arr[bit_int][spinbit];
+    else
+    {
+      fprintf(stderr,"ERROR: spinbit out of range\n");
+      return 0;
+    };
+  }
+  else 
+  {
+    fprintf(stderr,"ERROR: run number not found\n");
+    return 0;
+  };
+};
+
