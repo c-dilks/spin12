@@ -393,6 +393,10 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   strcpy(asym_title[1],"A_{L}^{Y}");
   strcpy(asym_title[2],"A_{L}^{B}");
   strcpy(asym_title[3],"A_{LL}");
+  char asym_title_scarat[asym_bins][16];
+  strcpy(asym_title_scarat[1],"R_{L}^{Y}");
+  strcpy(asym_title_scarat[2],"R_{L}^{B}");
+  strcpy(asym_title_scarat[3],"R_{LL}");
   for(Int_t a=1; a<asym_bins; a++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -626,12 +630,14 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   Double_t sys_en[asym_bins][eta_bins][pt_bins][en_bins];     // (systematic error)
   Double_t cent_en[asym_bins][eta_bins][pt_bins][en_bins];    // (energy bin center)
   Double_t width_en[asym_bins][eta_bins][pt_bins][en_bins];   // (energy bin width)
+  Double_t zeroz_en[asym_bins][eta_bins][pt_bins][en_bins];   // array of zeros
 
   Double_t val_pt[asym_bins][eta_bins][en_bins][pt_bins];     // arrays for pt dependent plots, one
   Double_t err_pt[asym_bins][eta_bins][en_bins][pt_bins];     // (statistical error)
   Double_t sys_pt[asym_bins][eta_bins][en_bins][pt_bins];     // (systematic error)
   Double_t cent_pt[asym_bins][eta_bins][en_bins][pt_bins];    // (pt bin center)
   Double_t width_pt[asym_bins][eta_bins][en_bins][pt_bins];   // (pt bin width)
+  Double_t zeroz_pt[asym_bins][eta_bins][en_bins][pt_bins];   // array of zeros
 
   // en dependent points for each pt bin
   for(Int_t a=1; a<asym_bins; a++)
@@ -642,6 +648,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
       {
         for(Int_t e=0; e<en_bins; e++)
         {
+          zeroz_en[a][g][p][e]=0;
           if(asym[a][g][p][e]->GetFunction("pol0"))
           {
             val_en[a][g][p][en_dep_cnt[a][g][p]] = asym[a][g][p][e]->GetFunction("pol0")->GetParameter(0);
@@ -649,18 +656,33 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               err_en[a][g][p][en_dep_cnt[a][g][p]] = asym[a][g][p][e]->GetFunction("pol0")->GetParError(0);
             // estimated statistical error
               //err_en[a][g][p][en_dep_cnt[a][g][p]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
-            sys_en[a][g][p][en_dep_cnt[a][g][p]] = fabs(RLL_asym[a][g][p][e]);
+            sys_en[a][g][p][en_dep_cnt[a][g][p]] = RLL_asym[a][g][p][e]; // MLM R_LL, R_Lb, R_Ly
             cent_en[a][g][p][en_dep_cnt[a][g][p]] = en_div[e] + ((en_div[e+1]-en_div[e])/2.0);
             width_en[a][g][p][en_dep_cnt[a][g][p]] = (en_div[e+1]-en_div[e])/2.0;
             en_dep_cnt[a][g][p]++;
           };
         };
-        en_dep[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],err_en[a][g][p]);
-        en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],sys_en[a][g][p]);
-        sprintf(en_dep_t[a][g][p],"%s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
-                pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
+        // asymmetry vs. en with statistical error bars
+          en_dep[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],err_en[a][g][p]);
+          sprintf(en_dep_t[a][g][p],"%s #pm #sigma %s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+                  asym_title[a],pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
+          
+        // --o--
+
+        // set systematic errors on asymmetry nominal vals:
+          /*
+          for(Int_t e=0; e<en_bins; e++) sys_en[a][g][p][e] = fabs(sys_en[a][g][p][e]);
+          en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],sys_en[a][g][p]);
+          sprintf(en_sys_t[a][g][p],"%s #pm %s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+                  asym_title_scarat[a],pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
+          */
+        // nominal value is R_L* (scarat asymmetry); error bars currently set to zero
+          en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],sys_en[a][g][p],width_en[a][g][p],zeroz_en[a][g][p]);
+          sprintf(en_sys_t[a][g][p],"%s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
+                  pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
+        
         en_dep[a][g][p]->SetTitle(en_dep_t[a][g][p]);
-        en_sys[a][g][p]->SetTitle(en_dep_t[a][g][p]);
+        en_sys[a][g][p]->SetTitle(en_sys_t[a][g][p]);
         en_dep[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
         en_sys[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
       };
@@ -676,6 +698,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
       {
         for(Int_t p=0; p<pt_bins; p++)
         {
+          zeroz_pt[a][g][e][p]=0;
           if(asym[a][g][p][e]->GetFunction("pol0"))
           {
             val_pt[a][g][e][pt_dep_cnt[a][g][e]] = asym[a][g][p][e]->GetFunction("pol0")->GetParameter(0);
@@ -683,18 +706,33 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               err_pt[a][g][e][pt_dep_cnt[a][g][e]] = asym[a][g][p][e]->GetFunction("pol0")->GetParError(0);
             // estimated statistical error
               //err_pt[a][g][e][pt_dep_cnt[a][g][e]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
-            sys_pt[a][g][e][pt_dep_cnt[a][g][e]] = fabs(RLL_asym[a][g][p][e]);
+            sys_pt[a][g][e][pt_dep_cnt[a][g][e]] = RLL_asym[a][g][p][e]; // MLM R_LL, R_Lb, R_Ly
             cent_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_div[p] + ((pt_div[p+1]-pt_div[p])/2.0);
             width_pt[a][g][e][pt_dep_cnt[a][g][e]] = (pt_div[p+1]-pt_div[p])/2.0;
             pt_dep_cnt[a][g][e]++;
           };
         };
-        pt_dep[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],err_pt[a][g][e]);
-        pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],sys_pt[a][g][e]);
-        sprintf(pt_dep_t[a][g][e],"%s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
-                en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
+        // asymmetry vs. pt with statistical error bars
+          pt_dep[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],err_pt[a][g][e]);
+          sprintf(pt_dep_t[a][g][e],"%s #pm #sigma %s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+                  asym_title[a],en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
+
+        // --o--
+
+        // set systematic errors on asymmetry nominal vals:
+          /*
+          for(Int_t p=0; p<pt_bins; p++) sys_pt[a][g][e][p] = fabs(sys_pt[a][g][e][p]);
+          pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],sys_pt[a][g][e]);
+          sprintf(pt_sys_t[a][g][e],"%s #pm %s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+                  asym_title_scarat[a],en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
+          */
+        // nominal value is R_L* (scarat asymmetry); error bars currently set to zero
+          pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],sys_pt[a][g][e],width_pt[a][g][e],zeroz_pt[a][g][e]);
+          sprintf(pt_sys_t[a][g][e],"%s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
+                  en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
+
         pt_dep[a][g][e]->SetTitle(pt_dep_t[a][g][e]);
-        pt_sys[a][g][e]->SetTitle(pt_dep_t[a][g][e]);
+        pt_sys[a][g][e]->SetTitle(pt_sys_t[a][g][e]);
         pt_dep[a][g][e]->GetXaxis()->SetTitle("p_{T} (GeV)");
         pt_sys[a][g][e]->GetXaxis()->SetTitle("p_{T} (GeV)");
       };
