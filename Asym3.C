@@ -664,7 +664,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
         };
         // asymmetry vs. en with statistical error bars
           en_dep[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],err_en[a][g][p]);
-          sprintf(en_dep_t[a][g][p],"%s #pm #sigma %s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+          sprintf(en_dep_t[a][g][p],"%s #pm #sigma %s vs. E for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                   asym_title[a],pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
           
         // --o--
@@ -673,18 +673,18 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           /*
           for(Int_t e=0; e<en_bins; e++) sys_en[a][g][p][e] = fabs(sys_en[a][g][p][e]);
           en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],val_en[a][g][p],width_en[a][g][p],sys_en[a][g][p]);
-          sprintf(en_sys_t[a][g][p],"%s #pm %s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+          sprintf(en_sys_t[a][g][p],"%s #pm %s vs. E for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                   asym_title_scarat[a],pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
           */
         // nominal value is R_L* (scarat asymmetry); error bars currently set to zero
           en_sys[a][g][p] = new TGraphErrors(en_dep_cnt[a][g][p],cent_en[a][g][p],sys_en[a][g][p],width_en[a][g][p],zeroz_en[a][g][p]);
-          sprintf(en_sys_t[a][g][p],"%s vs. E_{#gamma#gamma} for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
+          sprintf(en_sys_t[a][g][p],"%s vs. E for p_{T}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
                   pt_div[p],pt_div[p+1],eta_div[g],eta_div[g+1]);
         
         en_dep[a][g][p]->SetTitle(en_dep_t[a][g][p]);
         en_sys[a][g][p]->SetTitle(en_sys_t[a][g][p]);
-        en_dep[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
-        en_sys[a][g][p]->GetXaxis()->SetTitle("E_{#gamma#gamma} (GeV)");
+        en_dep[a][g][p]->GetXaxis()->SetTitle("E (GeV)");
+        en_sys[a][g][p]->GetXaxis()->SetTitle("E (GeV)");
       };
     };
   };
@@ -714,7 +714,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
         };
         // asymmetry vs. pt with statistical error bars
           pt_dep[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],err_pt[a][g][e]);
-          sprintf(pt_dep_t[a][g][e],"%s #pm #sigma %s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+          sprintf(pt_dep_t[a][g][e],"%s #pm #sigma %s vs. p_{T} for E#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                   asym_title[a],en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
 
         // --o--
@@ -723,12 +723,12 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
           /*
           for(Int_t p=0; p<pt_bins; p++) sys_pt[a][g][e][p] = fabs(sys_pt[a][g][e][p]);
           pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],val_pt[a][g][e],width_pt[a][g][e],sys_pt[a][g][e]);
-          sprintf(pt_sys_t[a][g][e],"%s #pm %s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
+          sprintf(pt_sys_t[a][g][e],"%s #pm %s vs. p_{T} for E#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title[a],
                   asym_title_scarat[a],en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
           */
         // nominal value is R_L* (scarat asymmetry); error bars currently set to zero
           pt_sys[a][g][e] = new TGraphErrors(pt_dep_cnt[a][g][e],cent_pt[a][g][e],sys_pt[a][g][e],width_pt[a][g][e],zeroz_pt[a][g][e]);
-          sprintf(pt_sys_t[a][g][e],"%s vs. p_{T} for E_{#gamma#gamma}#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
+          sprintf(pt_sys_t[a][g][e],"%s vs. p_{T} for E#in[%.2f,%.2f) and #eta#in[%.2f,%.2f)",asym_title_scarat[a],
                   en_div[e],en_div[e+1],eta_div[g],eta_div[g+1]);
 
         pt_dep[a][g][e]->SetTitle(pt_dep_t[a][g][e]);

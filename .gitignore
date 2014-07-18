@@ -14,3 +14,4 @@ chisq
 corrupted
 src/*.so
 src/*Dict*
+output/*
