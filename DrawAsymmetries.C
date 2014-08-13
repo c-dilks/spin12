@@ -1,6 +1,15 @@
 // draws A_LL, blue A_L, yellow A_L on one plot
+//
+// jtype is "sph" for single photons
+//          "pi0" for pi0s
+//          "thr" for >2 photon jets
+//
+// specificEbin: if > 0, then it shows pt-dependent plots for this en bin,
+//               useful for looking at pt-dependenc when PT_BINS and EN_BINS are both not unity;
+//               otherwise for pt-dependence, EN_BINS must equal 1
 
-void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", const char * asym_file="spin.root")
+void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", const char * asym_file="spin.root",
+                     Int_t specificEbin=-1)
 {
   // open root file
   TFile * asym_tfile = new TFile(asym_file,"READ");
@@ -89,15 +98,15 @@ void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", cons
   if(pt_bins0==1 && en_bins0!=1 && eta_bins0==1) 
   {
     for(Int_t a=1; a<asym_bins; a++) sprintf(kindep_name[a],"/%s/en_dep_a%d_g0_p0",dir_title[a],a);
-    strcpy(xaxistitle,"E (GeV)");
     sprintf(kindep_main_title,"%s asymmetries vs. E",jtype_str);
+    strcpy(xaxistitle,"E (GeV)");
     num_bins = en_bins0;
   }
   else if(pt_bins0!=1 && en_bins0==1 && eta_bins0==1) 
   {
     for(Int_t a=1; a<asym_bins; a++) sprintf(kindep_name[a],"/%s/pt_dep_a%d_g0_e0",dir_title[a],a);
-    strcpy(xaxistitle,"p_{#perp}  (GeV/c)");
     sprintf(kindep_main_title,"%s asymmetries vs. p_{T}",jtype_str);
+    strcpy(xaxistitle,"p_{#perp}  (GeV/c)");
     num_bins = pt_bins0;
   }
   else if(pt_bins0==1 && en_bins0==1 && eta_bins0==1)
@@ -107,13 +116,23 @@ void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", cons
     strcpy(xaxistitle,"single bin");
     num_bins = 1;
   }
+  else if(pt_bins0>=1 && en_bins0>=1 && specificEbin>=0)
+  {
+    for(Int_t a=1; a<asym_bins; a++) sprintf(kindep_name[a],"/%s/pt_dep_a%d_g0_e%d",dir_title[a],a,specificEbin);
+    sprintf(kindep_main_title,"%s asymmetries vs. p_{T}",jtype_str);
+    strcpy(xaxistitle,"p_{#perp}  (GeV/c)");
+    num_bins = pt_bins0;
+  }
   else
   {
     printf("\n<><><><><><><><><><>\n\n");
     printf("pt_bins>1 && en_bins>1 ----------> three.png NOT DRAWN\n");
+    printf("to do pt-dependence for a specific E bin, set parameter specificEbin\n");
     printf("spin.root produced\n");
     return;
   };
+  for(Int_t a=1; a<asym_bins; a++) printf("opening %s\n",kindep_name[a]);
+
 
   // get asym kin dep plots
   TGraphErrors * kindep_gr[asym_bins];
@@ -200,6 +219,28 @@ void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", cons
       asym_hist[a][0]->GetXaxis()->SetTitleSize(0.06);
       asym_hist[a][0]->GetYaxis()->SetTitleSize(0.06);
       asym_hist[a][0]->GetYaxis()->SetTitleOffset(0.8);
+      sprintf(asym_main_title[a],"%s %s vs #phi",jtype_str,asymmetry_w[a]);
+    };
+  }
+  else if(pt_bins0>=1 && en_bins0>=1 && specificEbin>=0)
+  {
+    for(Int_t a=1; a<asym_bins; a++) 
+    {
+      for(Int_t p=0; p<pt_bins0; p++)
+      {
+        sprintf(asym_name[a][p],"/%s/asym_a%d_g0_p%d_e%d",dir_title[a],a,p,specificEbin);
+        sprintf(asym_title[a][p],"p_{#perp} #in [%.2f,%.2f) and E #in [%.2f,%.2f)",
+                                  pt_div[p],pt_div[p+1],en_div[specificEbin],en_div[specificEbin+1]);
+        asym_hist[a][p] = (TH1D*) asym_tfile->Get(asym_name[a][p]);
+        asym_hist[a][p]->SetTitle(asym_title[a][p]);
+        asym_hist[a][p]->GetXaxis()->SetTitle("#phi");
+        asym_hist[a][p]->GetYaxis()->SetTitle(asymmetry[a]);
+        asym_hist[a][p]->GetXaxis()->SetLabelSize(0.05);
+        asym_hist[a][p]->GetYaxis()->SetLabelSize(0.05);
+        asym_hist[a][p]->GetXaxis()->SetTitleSize(0.06);
+        asym_hist[a][p]->GetYaxis()->SetTitleSize(0.06);
+        asym_hist[a][p]->GetYaxis()->SetTitleOffset(0.8);
+      };
       sprintf(asym_main_title[a],"%s %s vs #phi",jtype_str,asymmetry_w[a]);
     };
   };

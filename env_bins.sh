@@ -29,7 +29,7 @@ export PT_DIV_6=8.000000
 export PT_DIV_7=15.000000
 
 export EN_LOW=0.000000
-export EN_HIGH=250.000000
+export EN_HIGH=255.000000
 export EN_BINS=1
 export EN_DIV_0=0.000000
-export EN_DIV_1=250.000000
+export EN_DIV_1=255.000000
