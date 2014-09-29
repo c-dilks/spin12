@@ -81,6 +81,12 @@ Asymmetry Analysis
    - phi distributions for each run are written to the output file in object arrays, 
      which are named as phi_s[spinbit]_g[eta bin]_p[pt bin]_e[en bin]
      - the histograms in the object arrays have the run number appended to their names
+   - you need to supply `PhiDists3.C` with exclusion lists, which are lists of runs
+     for each jet type (sph,pi0,thr); these runs were excluded AFTER `toa_add.C` was
+     executed (see next step) to produce "wdist" pdfs, which are pt and energy distributions
+     for each run; a QA was done using these pdfs to highlight pathological runs, and 
+     thus if you're running things for the first time, you must run `loop_PhiDists` again
+     after the QA
 
 
 3. Merge the phiset files with "toa_add.C" (this is basically a sorted hadd for obj arrays)

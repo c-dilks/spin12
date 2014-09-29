@@ -216,6 +216,22 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
     };
   };
 
+  
+  // load run exclusion lists (for excluding specific runs, e.g., due to hot tower)
+  // -- exclusion_list_from_situ is the full list runs with pathological pt distributions
+  //    along with explanations of their pathologies
+  TTree * exclusion_sph = new TTree("exclusion_sph","exclusion_sph");
+  TTree * exclusion_pi0 = new TTree("exclusion_pi0","exclusion_pi0");
+  TTree * exclusion_thr = new TTree("exclusion_thr","exclusion_thr");
+  exclusion_sph->ReadFile("exclusion_list_sph","runnum/I");
+  exclusion_pi0->ReadFile("exclusion_list_pi0","runnum/I");
+  exclusion_thr->ReadFile("exclusion_list_thr","runnum/I");
+  Bool_t exclude_sph,exclude_pi0,exclude_thr;
+  Int_t rn_sph,rn_pi0,rn_thr;
+  exclusion_sph->SetBranchAddress("runnum",&rn_sph);
+  exclusion_pi0->SetBranchAddress("runnum",&rn_pi0);
+  exclusion_thr->SetBranchAddress("runnum",&rn_thr);
+
 
   // fill phi distributions and wdists 
   Int_t ss,gg,pp,ee,rr;
@@ -251,6 +267,12 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       pattern = RD->Pattern(runnum);
       b_pol = RD->BluePol(runnum);
       y_pol = RD->YellPol(runnum);
+      exclude_sph=0;
+      exclude_pi0=0;
+      exclude_thr=0;
+      for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
+      for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
+      for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
     };
 
     // check for valid array indices (filters out events outside kinematic boundaries)
@@ -261,7 +283,7 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
       {
         // n photon cut
-        if( fabs(N12-1)<0.01 )
+        if( exclude_sph==0 && fabs(N12-1)<0.01 )
         {
           phi_dist_sph[ss][gg][pp][ee][rr]->Fill(Phi);
           pt_wdist[0][gg][ee][rr]->Fill(Pt);
@@ -269,7 +291,8 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
         }
 
         // pi0 cut
-        else if( (TrigBits&0x200) && 
+        else if(  exclude_pi0==0 &&
+                  (TrigBits&0x200) && 
                   fabs(N12-2)<0.01 &&
                   Z<0.8 &&
                   fabs(M12-0.135)<0.1) 
@@ -280,7 +303,7 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
         }
 
         // >=3 photon jet cut
-        else if( N12>2 )
+        else if( exclude_thr==0 && N12>2 )
         {
           phi_dist_thr[ss][gg][pp][ee][rr]->Fill(Phi);
           pt_wdist[2][gg][ee][rr]->Fill(Pt);

@@ -279,7 +279,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
 
               // add weighted dists if we have consistent rellum measurement and filter_type 
               // defined above is passed
-              if(isConsistent)
+              if(isConsistent && ((TH1D*)(phi_dist_arr[s][g][p][e]->At(r)))->GetEntries() > 0)
               {
                 if( ( !strcmp(filter_type,"fill") && (fill>=filter_low && fill<=filter_high) ) ||
                     ( !strcmp(filter_type,"run") && (runnum>=filter_low && runnum<=filter_high) ) ||
