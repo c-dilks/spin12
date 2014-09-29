@@ -6,7 +6,7 @@ void Diagnostics()
 {
   gSystem->Load("src/RunData12.so");
   RunData12 * RD = new RunData12();
-  const Int_t NBINS=100; // NUMBER OF BINS
+  const Int_t NBINS=500; // NUMBER OF BINS
 
   // open chain
   TChain * tr = new TChain("str");
@@ -65,33 +65,39 @@ void Diagnostics()
   };
 
 
-  TH2F * sph_pt_vs_eta = new TH2F("sph_pt_vs_eta","single #gamma :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
-  TH2F * sph_en_vs_eta = new TH2F("sph_en_vs_eta","single #gamma :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
-  TH2F * sph_pt_vs_phi = new TH2F("sph_pt_vs_phi","single #gamma :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
-  TH2F * sph_en_vs_phi = new TH2F("sph_en_vs_phi","single #gamma :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
-  TH2F * sph_eta_vs_phi = new TH2F("sph_eta_vs_phi","single #gamma :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
-  TH2F * sph_en_vs_pt = new TH2F("sph_en_vs_pt","single #gamma :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+  TH2D * sph_pt_vs_eta = new TH2D("sph_pt_vs_eta","single #gamma :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2D * sph_en_vs_eta = new TH2D("sph_en_vs_eta","single #gamma :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2D * sph_pt_vs_phi = new TH2D("sph_pt_vs_phi","single #gamma :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2D * sph_en_vs_phi = new TH2D("sph_en_vs_phi","single #gamma :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2D * sph_eta_vs_phi = new TH2D("sph_eta_vs_phi","single #gamma :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2D * sph_en_vs_pt = new TH2D("sph_en_vs_pt","single #gamma :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH2F * pi0_pt_vs_eta = new TH2F("pi0_pt_vs_eta","#pi^{0} :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
-  TH2F * pi0_en_vs_eta = new TH2F("pi0_en_vs_eta","#pi^{0} :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
-  TH2F * pi0_pt_vs_phi = new TH2F("pi0_pt_vs_phi","#pi^{0} :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
-  TH2F * pi0_en_vs_phi = new TH2F("pi0_en_vs_phi","#pi^{0} :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
-  TH2F * pi0_eta_vs_phi = new TH2F("pi0_eta_vs_phi","#pi^{0} :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
-  TH2F * pi0_en_vs_pt = new TH2F("pi0_en_vs_pt","#pi^{0} :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+  TH2D * pi0_pt_vs_eta = new TH2D("pi0_pt_vs_eta","#pi^{0} :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2D * pi0_en_vs_eta = new TH2D("pi0_en_vs_eta","#pi^{0} :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2D * pi0_pt_vs_phi = new TH2D("pi0_pt_vs_phi","#pi^{0} :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2D * pi0_en_vs_phi = new TH2D("pi0_en_vs_phi","#pi^{0} :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2D * pi0_eta_vs_phi = new TH2D("pi0_eta_vs_phi","#pi^{0} :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2D * pi0_en_vs_pt = new TH2D("pi0_en_vs_pt","#pi^{0} :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH2F * thr_pt_vs_eta = new TH2F("thr_pt_vs_eta","N_{#gamma}>2 :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
-  TH2F * thr_en_vs_eta = new TH2F("thr_en_vs_eta","N_{#gamma}>2 :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
-  TH2F * thr_pt_vs_phi = new TH2F("thr_pt_vs_phi","N_{#gamma}>2 :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
-  TH2F * thr_en_vs_phi = new TH2F("thr_en_vs_phi","N_{#gamma}>2 :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
-  TH2F * thr_eta_vs_phi = new TH2F("thr_eta_vs_phi","N_{#gamma}>2 :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
-  TH2F * thr_en_vs_pt = new TH2F("thr_en_vs_pt","N_{#gamma}>2 :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+  TH2D * thr_pt_vs_eta = new TH2D("thr_pt_vs_eta","N_{#gamma}>2 :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2D * thr_en_vs_eta = new TH2D("thr_en_vs_eta","N_{#gamma}>2 :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2D * thr_pt_vs_phi = new TH2D("thr_pt_vs_phi","N_{#gamma}>2 :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2D * thr_en_vs_phi = new TH2D("thr_en_vs_phi","N_{#gamma}>2 :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2D * thr_eta_vs_phi = new TH2D("thr_eta_vs_phi","N_{#gamma}>2 :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2D * thr_en_vs_pt = new TH2D("thr_en_vs_pt","N_{#gamma}>2 :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH2F * pi0_z_vs_eta = new TH2F("pi0_z_vs_eta","#pi^{0} :: Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
-  TH2F * pi0_z_vs_phi = new TH2F("pi0_z_vs_phi","#pi^{0} :: Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
+  TH2D * pi0_z_vs_eta = new TH2D("pi0_z_vs_eta","#pi^{0} :: Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
+  TH2D * pi0_z_vs_phi = new TH2D("pi0_z_vs_phi","#pi^{0} :: Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
 
-  TH1F * mass_dist = new TH1F("mass_dist","M_{#gamma#gamma} distribution (N12==2, jet1, M12>0, Z<0.8, kicked==0)",NBINS,0,1);
-  TH1F * z_dist = new TH1F("z_dist","Z distribution (N12==2, jet1, abs(M12-0.135)<0.1, kicked==0)",NBINS,0,1);
-  TH1F * trig_dist = new TH1F("trig_dist","TrigBits distribution (N12==2)",NBINS,7500,33500);
+  TH1D * mass_dist = new TH1D("mass_dist","M_{#gamma#gamma} distribution (N12==2, jet1, M12>0, Z<0.8, kicked==0)",NBINS,0,1);
+  TH1D * z_dist = new TH1D("z_dist","Z distribution (N12==2, jet1, abs(M12-0.135)<0.1, kicked==0)",NBINS,0,1);
+  TH1D * trig_dist = new TH1D("trig_dist","TrigBits distribution (N12==2)",NBINS,7500,33500);
+  
+  TH2D * mass_vs_en = new TH2D("mass_vs_en","M_{#gamma#gamma} vs. E_{#gamma#gamma} (N12==2, jet1, M12>0, Z<0.8, kicked==0)",
+    NBINS,0,E12_max,NBINS,0,1);
+  TH2D * mass_vs_pt = new TH2D("mass_vs_pt","M_{#gamma#gamma} vs. p_{T} (N12==2, jet1, M12>0, Z<0.8, kicked==0)",
+    NBINS,0,Pt_max,NBINS,0,1);
+
 
   char cut[256];
   sprintf(cut,"abs(M12-0.135)<0.1 && Z<0.8 && (TrigBits&0x200) && kicked==0 && isConsistent==1 && b_pol*y_pol!=0");
@@ -112,7 +118,12 @@ void Diagnostics()
     if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
     {
       // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
-      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) mass_dist->Fill(M12);
+      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) 
+      {
+        mass_dist->Fill(M12);
+        mass_vs_en->Fill(E12,M12);
+        mass_vs_pt->Fill(Pt,M12);
+      }
       if(fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
       if(fabs(N12-2)<0.01) trig_dist->Fill(TrigBits);
 
@@ -210,6 +221,8 @@ void Diagnostics()
   mass_dist->Write();
   z_dist->Write();
   trig_dist->Write();
+  mass_vs_en->Write();
+  mass_vs_pt->Write();
 
   sph_pt_vs_eta->Write();
   sph_en_vs_eta->Write();

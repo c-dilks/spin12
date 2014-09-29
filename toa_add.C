@@ -118,20 +118,30 @@ void toa_add()
   Float_t pt_high; sscanf(gSystem->Getenv("PT_HIGH"),"%f",&pt_high);
   Float_t en_low; sscanf(gSystem->Getenv("EN_LOW"),"%f",&en_low);
   Float_t en_high; sscanf(gSystem->Getenv("EN_HIGH"),"%f",&en_high);
+  char jtype[3][8];
+  strcpy(jtype[0],"sph");
+  strcpy(jtype[1],"pi0");
+  strcpy(jtype[2],"thr");
 
 
   // phi_dist [spin] [eta] [pt] [energy] [run index - 1]
   TH1D * phi_dist_sph[4][eta_bins][pt_bins][en_bins][rtree_ent];
   TH1D * phi_dist_pi0[4][eta_bins][pt_bins][en_bins][rtree_ent];
   TH1D * phi_dist_thr[4][eta_bins][pt_bins][en_bins][rtree_ent];
+  TH1D * pt_wdist[3][eta_bins][en_bins][rtree_ent];
+  TH1D * en_wdist[3][eta_bins][pt_bins][rtree_ent];
   
   // infile_arr [spin] [eta] [pt] [energy] [phi file]
   TObjArray * infile_sph_arr[4][eta_bins][pt_bins][en_bins][NFILES];
   TObjArray * infile_pi0_arr[4][eta_bins][pt_bins][en_bins][NFILES];
   TObjArray * infile_thr_arr[4][eta_bins][pt_bins][en_bins][NFILES];
+  TObjArray * infile_pt_wdist_arr[3][eta_bins][en_bins][NFILES];
+  TObjArray * infile_en_wdist_arr[3][eta_bins][pt_bins][NFILES];
   char infile_sph_arr_n[4][eta_bins][pt_bins][en_bins][200];
   char infile_pi0_arr_n[4][eta_bins][pt_bins][en_bins][200];
   char infile_thr_arr_n[4][eta_bins][pt_bins][en_bins][200];
+  char infile_pt_wdist_arr_n[3][eta_bins][en_bins][200];
+  char infile_en_wdist_arr_n[3][eta_bins][pt_bins][200];
 
   Int_t inrun;
   Bool_t filter_sph[rtree_ent];
@@ -225,6 +235,44 @@ void toa_add()
         };
       };
     };
+    for(Int_t j=0; j<3; j++)
+    {
+      for(Int_t g=0; g<eta_bins; g++)
+      {
+        for(Int_t e=0; e<en_bins; e++)
+        {
+          if(f==0) sprintf(infile_pt_wdist_arr_n[j][g][e],"pt_wdist_%s_g%d_e%d",jtype[j],g,e);
+          infile_pt_wdist_arr[j][g][e][f] = (TObjArray*)phi_file[f]->Get(infile_pt_wdist_arr_n[j][g][e]);
+          for(Int_t o=0; o<infile_pt_wdist_arr[j][g][e][f]->GetEntries(); o++)
+          {
+            sscanf(infile_pt_wdist_arr[j][g][e][f]->At(o)->GetName(),"pt_wdist_%*3s_g%*d_e%*d_r%d",&inrun);
+            for(Int_t h=0; h<rtree_ent; h++)
+            {
+              if(inrun == runnum_arr[h])
+              {
+                pt_wdist[j][g][e][h] = (TH1D*) infile_pt_wdist_arr[j][g][e][f]->At(o);
+              };
+            };
+          };
+        };
+        for(Int_t p=0; p<pt_bins; p++)
+        {
+          if(f==0) sprintf(infile_en_wdist_arr_n[j][g][p],"en_wdist_%s_g%d_p%d",jtype[j],g,p);
+          infile_en_wdist_arr[j][g][p][f] = (TObjArray*)phi_file[f]->Get(infile_en_wdist_arr_n[j][g][p]);
+          for(Int_t o=0; o<infile_en_wdist_arr[j][g][p][f]->GetEntries(); o++)
+          {
+            sscanf(infile_en_wdist_arr[j][g][p][f]->At(o)->GetName(),"en_wdist_%*3s_g%*d_p%*d_r%d",&inrun);
+            for(Int_t h=0; h<rtree_ent; h++)
+            {
+              if(inrun == runnum_arr[h])
+              {
+                en_wdist[j][g][p][h] = (TH1D*) infile_en_wdist_arr[j][g][p][f]->At(o);
+              };
+            };
+          };
+        };
+      };
+    };
   };
 
 
@@ -237,9 +285,13 @@ void toa_add()
   TObjArray * combined_sph_array[4][eta_bins][pt_bins][en_bins];
   TObjArray * combined_pi0_array[4][eta_bins][pt_bins][en_bins];
   TObjArray * combined_thr_array[4][eta_bins][pt_bins][en_bins];
+  TObjArray * combined_pt_wdist_array[3][eta_bins][en_bins];
+  TObjArray * combined_en_wdist_array[3][eta_bins][pt_bins];
   char combined_sph_array_n[4][eta_bins][pt_bins][en_bins][200];
   char combined_pi0_array_n[4][eta_bins][pt_bins][en_bins][200];
   char combined_thr_array_n[4][eta_bins][pt_bins][en_bins][200];
+  char combined_pt_wdist_array_n[3][eta_bins][en_bins][200];
+  char combined_en_wdist_array_n[3][eta_bins][pt_bins][200];
 
   printf("--------------------------------------------------------\n");
 
@@ -278,5 +330,177 @@ void toa_add()
       };
     };
   };
+  for(Int_t j=0; j<3; j++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        combined_pt_wdist_array[j][g][e] = new TObjArray();
+        sprintf(combined_pt_wdist_array_n[j][g][e],"pt_wdist_%s_g%d_e%d",jtype[j],g,e);
+        for(Int_t r=0; r<rtree_ent; r++)
+        {
+          if(pt_wdist[j][g][e][r]!=NULL && 
+             ( (filter_sph[r]==1 && j==0) || (filter_pi0[r]==1 && j==1) || (filter_thr[r]==1 && j==2) ) )
+              combined_pt_wdist_array[j][g][e]->AddLast(pt_wdist[j][g][e][r]);
+        };
+        outfile->cd(); combined_pt_wdist_array[j][g][e]->Write(combined_pt_wdist_array_n[j][g][e],TObject::kSingleKey);
+      };
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        combined_en_wdist_array[j][g][p] = new TObjArray();
+        sprintf(combined_en_wdist_array_n[j][g][p],"en_wdist_%s_g%d_p%d",jtype[j],g,p);
+        for(Int_t r=0; r<rtree_ent; r++)
+        {
+          if(en_wdist[j][g][p][r]!=NULL && 
+             ( (filter_sph[r]==1 && j==0) || (filter_pi0[r]==1 && j==1) || (filter_thr[r]==1 && j==2) ) )
+              combined_en_wdist_array[j][g][p]->AddLast(en_wdist[j][g][p][r]);
+        };
+        outfile->cd(); combined_en_wdist_array[j][g][p]->Write(combined_en_wdist_array_n[j][g][p],TObject::kSingleKey);
+      };
+    };
+  };
+
+
+
+
+  // initialise tot wdists
+  outfile->cd();
+  TH1D * pt_wdist_tot[3][eta_bins][en_bins];
+  TH1D * en_wdist_tot[3][eta_bins][pt_bins];
+  char pt_wdist_n[3][eta_bins][en_bins][64];
+  char en_wdist_n[3][eta_bins][pt_bins][64];
+  Int_t NWBINS = ((TH1D*)(combined_pt_wdist_array[0][0][0]->At(0)))->GetNbinsX();
+  for(Int_t g=0; g<eta_bins; g++)
+  {
+    for(Int_t e=0; e<en_bins; e++)
+    {
+      sprintf(pt_wdist_n[0][g][e],"pt_wdist_tot_sph_g%d_e%d",g,e);
+      sprintf(pt_wdist_n[1][g][e],"pt_wdist_tot_pi0_g%d_e%d",g,e);
+      sprintf(pt_wdist_n[2][g][e],"pt_wdist_tot_thr_g%d_e%d",g,e);
+      for(Int_t j=0; j<3; j++) pt_wdist_tot[j][g][e] =
+        new TH1D(pt_wdist_n[j][g][e],pt_wdist_n[j][g][e],NWBINS,pt_low,pt_high);
+    };
+    for(Int_t p=0; p<pt_bins; p++)
+    {
+      sprintf(en_wdist_n[0][g][p],"en_wdist_tot_sph_g%d_p%d",g,p);
+      sprintf(en_wdist_n[1][g][p],"en_wdist_tot_pi0_g%d_p%d",g,p);
+      sprintf(en_wdist_n[2][g][p],"en_wdist_tot_thr_g%d_p%d",g,p);
+      for(Int_t j=0; j<3; j++) en_wdist_tot[j][g][p] =
+        new TH1D(en_wdist_n[j][g][p],en_wdist_n[j][g][p],NWBINS,en_low,en_high);
+    };
+  };
+
+
+  // fill tot wdists
+  Double_t bc,bc_old;
+  for(Int_t j=0; j<3; j++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        for(Int_t b=1; b<=NWBINS; b++)
+        {
+          for(Int_t o=0; o<combined_pt_wdist_array[j][g][e]->GetEntries(); o++)
+          {
+            bc = ((TH1D*)(combined_pt_wdist_array[j][g][e]->At(o)))->GetBinContent(b);
+            bc_old = pt_wdist_tot[j][g][e]->GetBinContent(b);
+            pt_wdist_tot[j][g][e]->SetBinContent(b,bc+bc_old);
+          };
+        };
+      };
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        for(Int_t b=1; b<=NWBINS; b++)
+        {
+          for(Int_t o=0; o<combined_en_wdist_array[j][g][p]->GetEntries(); o++)
+          {
+            bc = ((TH1D*)(combined_en_wdist_array[j][g][p]->At(o)))->GetBinContent(b);
+            bc_old = en_wdist_tot[j][g][p]->GetBinContent(b);
+            en_wdist_tot[j][g][p]->SetBinContent(b,bc+bc_old);
+          };
+        };
+      };
+    };
+  };
+
+  // write tot wdists
+  for(Int_t j=0; j<3; j++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t e=0; e<en_bins; e++) pt_wdist_tot[j][g][e]->Write();
+      for(Int_t p=0; p<pt_bins; p++) en_wdist_tot[j][g][p]->Write();
+    };
+  };
+
+
   printf("phiset/all.root written\n");
+
+
+
+  // print wdists for each phiset file
+  char pt_wdist_pdf[3][eta_bins][en_bins][64];
+  char en_wdist_pdf[3][eta_bins][pt_bins][64];
+  char pt_wdist_pdfl[3][eta_bins][en_bins][64];
+  char en_wdist_pdfl[3][eta_bins][pt_bins][64];
+  char pt_wdist_pdfr[3][eta_bins][en_bins][64];
+  char en_wdist_pdfr[3][eta_bins][pt_bins][64];
+  for(Int_t g=0; g<eta_bins; g++)
+  {
+    for(Int_t e=0; e<en_bins; e++)
+    {
+      sprintf(pt_wdist_pdf[0][g][e],"phiset/pt_wdist_sph_g%d_e%d.pdf",g,e);
+      sprintf(pt_wdist_pdf[1][g][e],"phiset/pt_wdist_pi0_g%d_e%d.pdf",g,e);
+      sprintf(pt_wdist_pdf[2][g][e],"phiset/pt_wdist_thr_g%d_e%d.pdf",g,e);
+      for(Int_t j=0; j<3; j++)
+      {
+        sprintf(pt_wdist_pdfl[j][g][e],"%s(",pt_wdist_pdf[j][g][e]);
+        sprintf(pt_wdist_pdfr[j][g][e],"%s)",pt_wdist_pdf[j][g][e]);
+      };
+    };
+    for(Int_t p=0; p<pt_bins; p++)
+    {
+      sprintf(en_wdist_pdf[0][g][p],"phiset/en_wdist_sph_g%d_p%d.pdf",g,p);
+      sprintf(en_wdist_pdf[1][g][p],"phiset/en_wdist_pi0_g%d_p%d.pdf",g,p);
+      sprintf(en_wdist_pdf[2][g][p],"phiset/en_wdist_thr_g%d_p%d.pdf",g,p);
+      for(Int_t j=0; j<3; j++)
+      {
+        sprintf(en_wdist_pdfl[j][g][p],"%s(",en_wdist_pdf[j][g][p]);
+        sprintf(en_wdist_pdfr[j][g][p],"%s)",en_wdist_pdf[j][g][p]);
+      };
+    };
+  };
+  TCanvas * cc = new TCanvas("cc","cc",700,500);
+  for(Int_t j=0; j<3; j++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        for(Int_t o=0; o<combined_pt_wdist_array[j][g][e]->GetEntries(); o++)
+        {
+          //cc->SetLogy();
+          ((TH1D*)(combined_pt_wdist_array[j][g][e]->At(o)))->Draw();
+          if(o==0) cc->Print(pt_wdist_pdfl[j][g][e],"pdf");
+          else if(o+1==combined_pt_wdist_array[j][g][e]->GetEntries()) cc->Print(pt_wdist_pdfr[j][g][e],"pdf");
+          else cc->Print(pt_wdist_pdf[j][g][e],"pdf");
+          cc->Clear();
+        };
+      };
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        for(Int_t o=0; o<combined_en_wdist_array[j][g][p]->GetEntries(); o++)
+        {
+          //cc->SetLogy();
+          ((TH1D*)(combined_en_wdist_array[j][g][p]->At(o)))->Draw();
+          if(o==0) cc->Print(en_wdist_pdfl[j][g][p],"pdf");
+          else if(o+1==combined_en_wdist_array[j][g][p]->GetEntries()) cc->Print(en_wdist_pdfr[j][g][p],"pdf");
+          else cc->Print(en_wdist_pdf[j][g][p],"pdf");
+          cc->Clear();
+        };
+      };
+    };
+  };
 }

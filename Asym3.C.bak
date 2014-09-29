@@ -201,8 +201,7 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
               //printf("phi_dist_name=%s\n",phi_dist_arr[0][g][p][e]->At(r)->GetName());
               //printf("jtype=%s runnum=%d\n",jtype,runnum);
 
-              // RELLUM SELECTION HERE
-              rellum = RD->Rellum(runnum,a,"vpd"); // note that asym no. = rellum no. needed for this asymmetry
+              rellum = RD->Rellum(runnum,a,"zdc"); // note that asym no. = rellum no. needed for this asymmetry
               scarat = RD->Scarat(runnum,"x",s);
               //rellum=1;     // for testing
               polar_b = RD->BluePol(runnum);
@@ -596,178 +595,6 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
   };
 
 
-  // open wdists
-  TH1D * pt_wdist[eta_bins][en_bins]; // [jtype] [eta] [en]
-  TH1D * en_wdist[eta_bins][pt_bins]; // [jtype] [eta] [en]
-  char pt_wdist_n[eta_bins][en_bins][64];
-  char en_wdist_n[eta_bins][pt_bins][64];
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      sprintf(pt_wdist_n[g][e],"pt_wdist_tot_%s_g%d_e%d",jtype,g,e);
-      pt_wdist[g][e] = (TH1D*) infile->Get(pt_wdist_n[g][e]);
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      sprintf(en_wdist_n[g][p],"en_wdist_tot_%s_g%d_p%d",jtype,g,p);
-      en_wdist[g][p] = (TH1D*) infile->Get(en_wdist_n[g][p]);
-    };
-  };
-
-
-  // wdist weighting histograms
-  Float_t pt_cc[pt_bins];
-  Float_t pt_ww[pt_bins];
-  Float_t en_cc[pt_bins];
-  Float_t en_ww[pt_bins];
-  Int_t NWBINS = pt_wdist[0][0]->GetNbinsX();
-  TH1D * pt_wdist_sub[eta_bins][en_bins][pt_bins];
-  TH1D * en_wdist_sub[eta_bins][pt_bins][en_bins];
-  char pt_wdist_sub_n[eta_bins][en_bins][pt_bins][64];
-  char en_wdist_sub_n[eta_bins][pt_bins][en_bins][64];
-  Int_t iter = 0;
-  // first create the wdist "sub" distributions
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      for(Int_t p=0; p<pt_bins; p++)
-      {
-        sprintf(pt_wdist_sub_n[g][e][p],"pt_wdist_sub_g%d_e%d_ptbin%d",g,e,p);
-        pt_wdist_sub[g][e][p] = new TH1D(pt_wdist_sub_n[g][e][p],pt_wdist_sub_n[g][e][p],NWBINS,pt_low,pt_high);
-      };
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      for(Int_t e=0; e<en_bins; e++)
-      {
-        sprintf(en_wdist_sub_n[g][p][e],"en_wdist_sub_g%d_p%d_enbin%d",g,p,e);
-        en_wdist_sub[g][p][e] = new TH1D(en_wdist_sub_n[g][p][e],en_wdist_sub_n[g][p][e],NWBINS,en_low,en_high);
-      };
-    };
-  };
-  // then fill the wdist "sub" distributions
-  Double_t bincont,bincent;
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      for(Int_t b=1; b<=NWBINS; b++)
-      {
-        bincont = pt_wdist[g][e]->GetBinContent(b);
-        bincent = pt_wdist[g][e]->GetBinCenter(b);
-        for(Int_t p=0; p<pt_bins; p++)
-        {
-          if(bincent>=pt_div[p] && bincent<pt_div[p+1])
-          {
-            pt_wdist_sub[g][e][p]->SetBinContent(b,bincont);
-          };
-        };
-      };
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      for(Int_t b=1; b<=NWBINS; b++)
-      {
-        bincont = en_wdist[g][p]->GetBinContent(b);
-        bincent = en_wdist[g][p]->GetBinCenter(b);
-        for(Int_t e=0; e<en_bins; e++)
-        {
-          if(bincent>=en_div[e] && bincent<en_div[e+1])
-          {
-            en_wdist_sub[g][p][e]->SetBinContent(b,bincont);
-          };
-        };
-      };
-    };
-  };
-
-
-
-  // draw TLines to wdists which indicate the weighting
-  TLine * pt_div_line[eta_bins][en_bins][pt_bins+1];
-  TLine * en_div_line[eta_bins][pt_bins][en_bins+1];
-  TLine * pt_cent_line[eta_bins][en_bins][pt_bins];
-  TLine * en_cent_line[eta_bins][pt_bins][en_bins];
-  TLine * pt_width_line[eta_bins][en_bins][pt_bins];
-  TLine * en_width_line[eta_bins][pt_bins][en_bins];
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      for(Int_t p=0; p<pt_bins; p++)
-      {
-        pt_div_line[g][e][p] = new TLine(pt_div[p],0,pt_div[p],pt_wdist[g][e]->GetMaximum());
-        pt_cent_line[g][e][p] = new TLine(pt_wdist_sub[g][e][p]->GetMean(),
-                                          pt_wdist[g][e]->GetMaximum() * 1/4,
-                                          pt_wdist_sub[g][e][p]->GetMean(),
-                                          pt_wdist[g][e]->GetMaximum() * 3/4);
-        pt_width_line[g][e][p] = new TLine(pt_wdist_sub[g][e][p]->GetMean() - pt_wdist_sub[g][e][p]->GetRMS(),
-                                           pt_wdist[g][e]->GetMaximum()/2,
-                                           pt_wdist_sub[g][e][p]->GetMean() + pt_wdist_sub[g][e][p]->GetRMS(),
-                                           pt_wdist[g][e]->GetMaximum()/2);
-        pt_div_line[g][e][p]->SetLineColor(kBlack);
-        pt_cent_line[g][e][p]->SetLineColor(kRed);
-        pt_width_line[g][e][p]->SetLineColor(kRed);
-      };
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      for(Int_t e=0; e<en_bins; e++)
-      {
-        en_div_line[g][p][e] = new TLine(en_div[e],0,en_div[e],en_wdist[g][p]->GetMaximum());
-        en_cent_line[g][p][e] = new TLine(en_wdist_sub[g][p][e]->GetMean(),
-                                          en_wdist[g][p]->GetMaximum() * 1/4,
-                                          en_wdist_sub[g][p][e]->GetMean(),
-                                          en_wdist[g][p]->GetMaximum() * 3/4);
-        en_width_line[g][p][e] = new TLine(en_wdist_sub[g][p][e]->GetMean() - en_wdist_sub[g][p][e]->GetRMS(),
-                                           en_wdist[g][p]->GetMaximum()/2,
-                                           en_wdist_sub[g][p][e]->GetMean() + en_wdist_sub[g][p][e]->GetRMS(),
-                                           en_wdist[g][p]->GetMaximum()/2);
-        en_div_line[g][p][e]->SetLineColor(kBlack);
-        en_cent_line[g][p][e]->SetLineColor(kRed);
-        en_width_line[g][p][e]->SetLineColor(kRed);
-      };
-    };
-  };
-  
-
-  // make TCanvases for wdist plots with marker lines
-  TCanvas * pt_wdist_canv[eta_bins][en_bins];
-  TCanvas * en_wdist_canv[eta_bins][pt_bins];
-  char pt_wdist_canv_n[eta_bins][en_bins][64];
-  char en_wdist_canv_n[eta_bins][pt_bins][64];
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      sprintf(pt_wdist_canv_n[g][e],"pt_wdist_canv_g%d_e%d",g,e);
-      pt_wdist_canv[g][e] = new TCanvas(pt_wdist_canv_n[g][e],pt_wdist_canv_n[g][e],700,500);
-      pt_wdist[g][e]->Draw();
-      for(Int_t p=0; p<pt_bins; p++)
-      {
-        pt_div_line[g][e][p]->Draw();
-        pt_cent_line[g][e][p]->Draw();
-        pt_width_line[g][e][p]->Draw();
-      };
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      sprintf(en_wdist_canv_n[g][p],"en_wdist_canv_g%d_p%d",g,p);
-      en_wdist_canv[g][p] = new TCanvas(en_wdist_canv_n[g][p],en_wdist_canv_n[g][p],700,500);
-      en_wdist[g][p]->Draw();
-      for(Int_t e=0; e<en_bins; e++)
-      {
-        en_div_line[g][p][e]->Draw();
-        en_cent_line[g][p][e]->Draw();
-        en_width_line[g][p][e]->Draw();
-      };
-    };
-  };
-
-
-
   // kinematic dependence plots
   TGraphErrors * en_dep[asym_bins][eta_bins][pt_bins]; // en dependent plots, one for each pt bin (statistical errors)
   TGraphErrors * pt_dep[asym_bins][eta_bins][en_bins]; // pt dependent plots, one for each en bin
@@ -830,12 +657,8 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
             // estimated statistical error
               //err_en[a][g][p][en_dep_cnt[a][g][p]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
             sys_en[a][g][p][en_dep_cnt[a][g][p]] = RLL_asym[a][g][p][e]; // MLM R_LL, R_Lb, R_Ly
-
-            //cent_en[a][g][p][en_dep_cnt[a][g][p]] = en_div[e] + ((en_div[e+1]-en_div[e])/2.0);
-            //width_en[a][g][p][en_dep_cnt[a][g][p]] = (en_div[e+1]-en_div[e])/2.0;
-            cent_en[a][g][p][en_dep_cnt[a][g][p]] = en_wdist_sub[g][p][e]->GetMean();
-            width_en[a][g][p][en_dep_cnt[a][g][p]] = en_wdist_sub[g][p][e]->GetRMS();
-
+            cent_en[a][g][p][en_dep_cnt[a][g][p]] = en_div[e] + ((en_div[e+1]-en_div[e])/2.0);
+            width_en[a][g][p][en_dep_cnt[a][g][p]] = (en_div[e+1]-en_div[e])/2.0;
             en_dep_cnt[a][g][p]++;
           };
         };
@@ -884,12 +707,8 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
             // estimated statistical error
               //err_pt[a][g][e][pt_dep_cnt[a][g][e]]=1/(0.55*0.55)*1/sqrt(yield[0][g][p][e]+yield[1][g][p][e]+yield[2][g][p][e]+yield[3][g][p][e]);
             sys_pt[a][g][e][pt_dep_cnt[a][g][e]] = RLL_asym[a][g][p][e]; // MLM R_LL, R_Lb, R_Ly
-
-            //cent_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_div[p] + ((pt_div[p+1]-pt_div[p])/2.0);
-            //width_pt[a][g][e][pt_dep_cnt[a][g][e]] = (pt_div[p+1]-pt_div[p])/2.0;
-            cent_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_wdist_sub[g][e][p]->GetMean();
-            width_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_wdist_sub[g][e][p]->GetRMS();
-
+            cent_pt[a][g][e][pt_dep_cnt[a][g][e]] = pt_div[p] + ((pt_div[p+1]-pt_div[p])/2.0);
+            width_pt[a][g][e][pt_dep_cnt[a][g][e]] = (pt_div[p+1]-pt_div[p])/2.0;
             pt_dep_cnt[a][g][e]++;
           };
         };
@@ -1035,32 +854,5 @@ void Asym3(const char * jtype="pi0", const char * filter_type="all",Int_t filter
       };
     };
   };
-  
-
-  // write out wdist information in directory "bin_weighting"
-  outfile->mkdir("bin_weighting");
-  outfile->cd("/bin_weighting");
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++) pt_wdist_canv[g][e]->Write();
-    for(Int_t p=0; p<pt_bins; p++) en_wdist_canv[g][p]->Write();
-  };
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++) pt_wdist[g][e]->Write();
-    for(Int_t p=0; p<pt_bins; p++) en_wdist[g][p]->Write();
-  }
-  for(Int_t g=0; g<eta_bins; g++)
-  {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      for(Int_t p=0; p<pt_bins; p++) pt_wdist_sub[g][e][p]->Write();
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      for(Int_t e=0; e<en_bins; e++) en_wdist_sub[g][p][e]->Write();
-    };
-  };
-
   printf("written\n");
 };

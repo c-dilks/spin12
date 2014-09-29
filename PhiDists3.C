@@ -125,6 +125,40 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   printf("NRUNS=%d\n",NRUNS);
 
 
+  // define kinematic distributions ("wdist" = weighting distribution)
+  // -- these are distributions in energy and phi, but with finer binning; they are used 
+  //    to weight the horizontal position of points on the asymmetry plots
+  // -- one pt wdist for each en bin (and eta bin) 
+  // -- one en wdist for each pt bin (and eta bin)
+  const Int_t NWBINS = 100;
+  TH1D * pt_wdist[3][eta_bins][en_bins][NRUNS]; // [jet type] [....]
+  TH1D * en_wdist[3][eta_bins][pt_bins][NRUNS];
+  char pt_wdist_n[3][eta_bins][en_bins][NRUNS][64];
+  char en_wdist_n[3][eta_bins][pt_bins][NRUNS][64];
+  for(Int_t r=0; r<NRUNS; r++)
+  {
+    for(Int_t g=0; g<eta_bins; g++)
+    {
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        sprintf(pt_wdist_n[0][g][e][r],"pt_wdist_sph_g%d_e%d_r%d",g,e,runnum_arr[r]);
+        sprintf(pt_wdist_n[1][g][e][r],"pt_wdist_pi0_g%d_e%d_r%d",g,e,runnum_arr[r]);
+        sprintf(pt_wdist_n[2][g][e][r],"pt_wdist_thr_g%d_e%d_r%d",g,e,runnum_arr[r]);
+        for(Int_t j=0; j<3; j++)
+          pt_wdist[j][g][e][r] = new TH1D(pt_wdist_n[j][g][e][r],pt_wdist_n[j][g][e][r],NWBINS,pt_low,pt_high);
+      };
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        sprintf(en_wdist_n[0][g][p][r],"en_wdist_sph_g%d_p%d_r%d",g,p,runnum_arr[r]);
+        sprintf(en_wdist_n[1][g][p][r],"en_wdist_pi0_g%d_p%d_r%d",g,p,runnum_arr[r]);
+        sprintf(en_wdist_n[2][g][p][r],"en_wdist_thr_g%d_p%d_r%d",g,p,runnum_arr[r]);
+        for(Int_t j=0; j<3; j++)
+          en_wdist[j][g][p][r] = new TH1D(en_wdist_n[j][g][p][r],en_wdist_n[j][g][p][r],NWBINS,en_low,en_high);
+      };
+    };
+  };
+
+
   // define phi distributions  for each spinbit and kinematic bin
   // _sph = single photon
   // _pi0 = neutral pions
@@ -183,7 +217,7 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   };
 
 
-  // fill phi distributions
+  // fill phi distributions and wdists 
   Int_t ss,gg,pp,ee,rr;
   rr=-1; runnum_tmp=0;
   printf("fill phi dists...\n");
@@ -227,16 +261,31 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
       {
         // n photon cut
-        if( fabs(N12-1)<0.01 ) phi_dist_sph[ss][gg][pp][ee][rr]->Fill(Phi);
+        if( fabs(N12-1)<0.01 )
+        {
+          phi_dist_sph[ss][gg][pp][ee][rr]->Fill(Phi);
+          pt_wdist[0][gg][ee][rr]->Fill(Pt);
+          en_wdist[0][gg][pp][rr]->Fill(E12);
+        }
 
         // pi0 cut
         else if( (TrigBits&0x200) && 
                   fabs(N12-2)<0.01 &&
                   Z<0.8 &&
-                  fabs(M12-0.135)<0.1) phi_dist_pi0[ss][gg][pp][ee][rr]->Fill(Phi);
+                  fabs(M12-0.135)<0.1) 
+        {
+          phi_dist_pi0[ss][gg][pp][ee][rr]->Fill(Phi);
+          pt_wdist[1][gg][ee][rr]->Fill(Pt);
+          en_wdist[1][gg][pp][rr]->Fill(E12);
+        }
 
         // >=3 photon jet cut
-        else if( N12>2 ) phi_dist_thr[ss][gg][pp][ee][rr]->Fill(Phi);
+        else if( N12>2 )
+        {
+          phi_dist_thr[ss][gg][pp][ee][rr]->Fill(Phi);
+          pt_wdist[2][gg][ee][rr]->Fill(Pt);
+          en_wdist[2][gg][pp][rr]->Fill(E12);
+        };
       };
     };
   };
@@ -247,9 +296,13 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   TObjArray * phi_dist_sph_arr[4][eta_bins][pt_bins][en_bins];
   TObjArray * phi_dist_pi0_arr[4][eta_bins][pt_bins][en_bins];
   TObjArray * phi_dist_thr_arr[4][eta_bins][pt_bins][en_bins];
+  TObjArray * pt_wdist_arr[3][eta_bins][en_bins];
+  TObjArray * en_wdist_arr[3][eta_bins][pt_bins];
   char phi_dist_sph_arr_name[4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_pi0_arr_name[4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_thr_arr_name[4][eta_bins][pt_bins][en_bins][128];
+  char pt_wdist_arr_name[3][eta_bins][en_bins][128];
+  char en_wdist_arr_name[3][eta_bins][pt_bins][128];
   for(Int_t e=0; e<en_bins; e++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -274,6 +327,25 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
           };
         };
       };
+    };
+  };
+  for(Int_t g=0; g<eta_bins; g++)
+  {
+    for(Int_t e=0; e<en_bins; e++)
+    {
+      for(Int_t j=0; j<3; j++) pt_wdist_arr[j][g][e] = new TObjArray();
+      sprintf(pt_wdist_arr_name[0][g][e],"pt_wdist_sph_g%d_e%d",g,e);
+      sprintf(pt_wdist_arr_name[1][g][e],"pt_wdist_pi0_g%d_e%d",g,e);
+      sprintf(pt_wdist_arr_name[2][g][e],"pt_wdist_thr_g%d_e%d",g,e);
+      for(Int_t j=0; j<3; j++) for(Int_t r=0; r<NRUNS; r++) pt_wdist_arr[j][g][e]->AddLast(pt_wdist[j][g][e][r]);
+    };
+    for(Int_t p=0; p<pt_bins; p++)
+    {
+      for(Int_t j=0; j<3; j++) en_wdist_arr[j][g][p] = new TObjArray();
+      sprintf(en_wdist_arr_name[0][g][p],"en_wdist_sph_g%d_p%d",g,p);
+      sprintf(en_wdist_arr_name[1][g][p],"en_wdist_pi0_g%d_p%d",g,p);
+      sprintf(en_wdist_arr_name[2][g][p],"en_wdist_thr_g%d_p%d",g,p);
+      for(Int_t j=0; j<3; j++) for(Int_t r=0; r<NRUNS; r++) en_wdist_arr[j][g][p]->AddLast(en_wdist[j][g][p][r]);
     };
   };
 
@@ -327,4 +399,14 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
     };
   };
   outfile->cd();
+
+  // write wdists
+  for(Int_t g=0; g<eta_bins; g++)
+  {
+    for(Int_t j=0; j<3; j++)
+    {
+      for(Int_t e=0; e<en_bins; e++) pt_wdist_arr[j][g][e]->Write(pt_wdist_arr_name[j][g][e],TObject::kSingleKey);
+      for(Int_t p=0; p<pt_bins; p++) en_wdist_arr[j][g][p]->Write(en_wdist_arr_name[j][g][p],TObject::kSingleKey);
+    };
+  };
 };

@@ -293,7 +293,7 @@ void DrawAsymmetries(const char * jtype="pi0", const char * filetype="png", cons
     kindep_pad[a]->SetGrid(1,1);
     kindep_pad[a]->Draw();
     kindep_pad[a]->cd();
-    kindep_gr[a]->Draw("APE");
+    kindep_gr[a]->Draw("APE"); 
     zero_line[a]->Draw();
     kindep_canv->cd();
   };
