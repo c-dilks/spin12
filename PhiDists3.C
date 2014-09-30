@@ -130,11 +130,14 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   //    to weight the horizontal position of points on the asymmetry plots
   // -- one pt wdist for each en bin (and eta bin) 
   // -- one en wdist for each pt bin (and eta bin)
+  // -- one invariant mass (mm) wdist for each eta,pt,en bin
   const Int_t NWBINS = 100;
   TH1D * pt_wdist[3][eta_bins][en_bins][NRUNS]; // [jet type] [....]
   TH1D * en_wdist[3][eta_bins][pt_bins][NRUNS];
+  TH1D * mm_wdist[3][eta_bins][pt_bins][en_bins][NRUNS];
   char pt_wdist_n[3][eta_bins][en_bins][NRUNS][64];
   char en_wdist_n[3][eta_bins][pt_bins][NRUNS][64];
+  char mm_wdist_n[3][eta_bins][pt_bins][en_bins][NRUNS][64];
   for(Int_t r=0; r<NRUNS; r++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -154,6 +157,17 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
         sprintf(en_wdist_n[2][g][p][r],"en_wdist_thr_g%d_p%d_r%d",g,p,runnum_arr[r]);
         for(Int_t j=0; j<3; j++)
           en_wdist[j][g][p][r] = new TH1D(en_wdist_n[j][g][p][r],en_wdist_n[j][g][p][r],NWBINS,en_low,en_high);
+      };
+      for(Int_t p=0; p<pt_bins; p++)
+      {
+        for(Int_t e=0; e<en_bins; e++)
+        {
+          sprintf(mm_wdist_n[0][g][p][e][r],"mm_wdist_sph_g%d_p%d_e%d_r%d",g,p,e,runnum_arr[r]);
+          sprintf(mm_wdist_n[1][g][p][e][r],"mm_wdist_pi0_g%d_p%d_e%d_r%d",g,p,e,runnum_arr[r]);
+          sprintf(mm_wdist_n[2][g][p][e][r],"mm_wdist_thr_g%d_p%d_e%d_r%d",g,p,e,runnum_arr[r]);
+          for(Int_t j=0; j<3; j++)
+            mm_wdist[j][g][p][e][r] = new TH1D(mm_wdist_n[j][g][p][e][r],mm_wdist_n[j][g][p][e][r],NWBINS,0,1);
+        };
       };
     };
   };
@@ -270,9 +284,9 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       exclude_sph=0;
       exclude_pi0=0;
       exclude_thr=0;
-      for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
-      for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
-      for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
+      //for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
+      //for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
+      //for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
     };
 
     // check for valid array indices (filters out events outside kinematic boundaries)
@@ -288,9 +302,10 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
           phi_dist_sph[ss][gg][pp][ee][rr]->Fill(Phi);
           pt_wdist[0][gg][ee][rr]->Fill(Pt);
           en_wdist[0][gg][pp][rr]->Fill(E12);
+          mm_wdist[0][gg][pp][ee][rr]->Fill(M12);
         }
 
-        // pi0 cut
+        // pi0 cut (if you change something here, change it below too for the cut used for filling mass wdist)
         else if(  exclude_pi0==0 &&
                   (TrigBits&0x200) && 
                   fabs(N12-2)<0.01 &&
@@ -302,12 +317,23 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
           en_wdist[1][gg][pp][rr]->Fill(E12);
         }
 
+
         // >=3 photon jet cut
         else if( exclude_thr==0 && N12>2 )
         {
           phi_dist_thr[ss][gg][pp][ee][rr]->Fill(Phi);
           pt_wdist[2][gg][ee][rr]->Fill(Pt);
           en_wdist[2][gg][pp][rr]->Fill(E12);
+          mm_wdist[2][gg][pp][ee][rr]->Fill(M12);
+        };
+
+        // pi0 cut without mass cut (for filling mass wdist)
+        if(  exclude_pi0==0 &&
+                  (TrigBits&0x200) && 
+                  fabs(N12-2)<0.01 &&
+                  Z<0.8)
+        {
+          mm_wdist[1][gg][pp][ee][rr]->Fill(M12); 
         };
       };
     };
@@ -321,11 +347,13 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   TObjArray * phi_dist_thr_arr[4][eta_bins][pt_bins][en_bins];
   TObjArray * pt_wdist_arr[3][eta_bins][en_bins];
   TObjArray * en_wdist_arr[3][eta_bins][pt_bins];
+  TObjArray * mm_wdist_arr[3][eta_bins][pt_bins][en_bins];
   char phi_dist_sph_arr_name[4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_pi0_arr_name[4][eta_bins][pt_bins][en_bins][128];
   char phi_dist_thr_arr_name[4][eta_bins][pt_bins][en_bins][128];
   char pt_wdist_arr_name[3][eta_bins][en_bins][128];
   char en_wdist_arr_name[3][eta_bins][pt_bins][128];
+  char mm_wdist_arr_name[3][eta_bins][pt_bins][en_bins][128];
   for(Int_t e=0; e<en_bins; e++)
   {
     for(Int_t g=0; g<eta_bins; g++)
@@ -369,6 +397,17 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       sprintf(en_wdist_arr_name[1][g][p],"en_wdist_pi0_g%d_p%d",g,p);
       sprintf(en_wdist_arr_name[2][g][p],"en_wdist_thr_g%d_p%d",g,p);
       for(Int_t j=0; j<3; j++) for(Int_t r=0; r<NRUNS; r++) en_wdist_arr[j][g][p]->AddLast(en_wdist[j][g][p][r]);
+    };
+    for(Int_t p=0; p<pt_bins; p++)
+    {
+      for(Int_t e=0; e<en_bins; e++)
+      {
+        for(Int_t j=0; j<3; j++) mm_wdist_arr[j][g][p][e] = new TObjArray();
+        sprintf(mm_wdist_arr_name[0][g][p][e],"mm_wdist_sph_g%d_p%d_e%d",g,p,e);
+        sprintf(mm_wdist_arr_name[1][g][p][e],"mm_wdist_pi0_g%d_p%d_e%d",g,p,e);
+        sprintf(mm_wdist_arr_name[2][g][p][e],"mm_wdist_thr_g%d_p%d_e%d",g,p,e);
+        for(Int_t j=0; j<3; j++) for(Int_t r=0; r<NRUNS; r++) mm_wdist_arr[j][g][p][e]->AddLast(mm_wdist[j][g][p][e][r]);
+      };
     };
   };
 
@@ -430,6 +469,8 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
     {
       for(Int_t e=0; e<en_bins; e++) pt_wdist_arr[j][g][e]->Write(pt_wdist_arr_name[j][g][e],TObject::kSingleKey);
       for(Int_t p=0; p<pt_bins; p++) en_wdist_arr[j][g][p]->Write(en_wdist_arr_name[j][g][p],TObject::kSingleKey);
+      for(Int_t p=0; p<pt_bins; p++) for(Int_t e=0; e<en_bins; e++)
+        mm_wdist_arr[j][g][p][e]->Write(mm_wdist_arr_name[j][g][p][e],TObject::kSingleKey);
     };
   };
 };

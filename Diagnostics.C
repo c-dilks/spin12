@@ -64,6 +64,20 @@ void Diagnostics()
     };
   };
 
+  
+  // load run exclusion trees
+  TTree * exclusion_sph = new TTree("exclusion_sph","exclusion_sph");
+  TTree * exclusion_pi0 = new TTree("exclusion_pi0","exclusion_pi0");
+  TTree * exclusion_thr = new TTree("exclusion_thr","exclusion_thr");
+  exclusion_sph->ReadFile("exclusion_list_sph","runnum/I");
+  exclusion_pi0->ReadFile("exclusion_list_pi0","runnum/I");
+  exclusion_thr->ReadFile("exclusion_list_thr","runnum/I");
+  Bool_t exclude_sph,exclude_pi0,exclude_thr;
+  Int_t rn_sph,rn_pi0,rn_thr;
+  exclusion_sph->SetBranchAddress("runnum",&rn_sph);
+  exclusion_pi0->SetBranchAddress("runnum",&rn_pi0);
+  exclusion_thr->SetBranchAddress("runnum",&rn_thr);
+
 
   TH2D * sph_pt_vs_eta = new TH2D("sph_pt_vs_eta","single #gamma :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
   TH2D * sph_en_vs_eta = new TH2D("sph_en_vs_eta","single #gamma :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
@@ -98,9 +112,16 @@ void Diagnostics()
   TH2D * mass_vs_pt = new TH2D("mass_vs_pt","M_{#gamma#gamma} vs. p_{T} (N12==2, jet1, M12>0, Z<0.8, kicked==0)",
     NBINS,0,Pt_max,NBINS,0,1);
 
+  TH1D * mass_dist_for_enbin[10];
+  char mass_dist_for_enbin_n[10][64];
+  char mass_dist_for_enbin_t[10][256];
+  for(Int_t ee=0; ee<10; ee++)
+  {
+    sprintf(mass_dist_for_enbin_n[ee],"mass_dist_for_enbin%d",ee);
+    sprintf(mass_dist_for_enbin_t[ee],"M_{#gamma#gamma} distribution for E_{#gamma#gamma}#in[%d,%d) GeV",ee*10,(ee+1)*10);
+    mass_dist_for_enbin[ee] = new TH1D(mass_dist_for_enbin_n[ee],mass_dist_for_enbin_t[ee],NBINS,0,1);
+  };
 
-  char cut[256];
-  sprintf(cut,"abs(M12-0.135)<0.1 && Z<0.8 && (TrigBits&0x200) && kicked==0 && isConsistent==1 && b_pol*y_pol!=0");
   runnum_tmp=0;
   for(Int_t x=0; x<tr->GetEntries(); x++)
   {
@@ -113,22 +134,32 @@ void Diagnostics()
       y_pol = RD->YellPol(runnum);
       isConsistent = RD->RellumConsistent(runnum);
       runnum_tmp=runnum;
+      exclude_sph=0;
+      exclude_pi0=0;
+      exclude_thr=0;
+      for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
+      for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
+      for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
     }
     // rellum / pol cut
     if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
     {
       // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
-      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) 
+      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) 
       {
         mass_dist->Fill(M12);
         mass_vs_en->Fill(E12,M12);
         mass_vs_pt->Fill(Pt,M12);
+        for(Int_t ee=0; ee<10; ee++)
+        {
+          if(E12>=(ee*10) && E12<((ee+1)*10)) mass_dist_for_enbin[ee]->Fill(M12);
+        };
       }
-      if(fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
-      if(fabs(N12-2)<0.01) trig_dist->Fill(TrigBits);
+      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
+      if(exclude_pi0==0 && fabs(N12-2)<0.01) trig_dist->Fill(TrigBits);
 
       // single photon cut
-      if(fabs(N12-1)<0.01)
+      if(exclude_sph==0 && fabs(N12-1)<0.01)
       {
         sph_pt_vs_eta->Fill(Eta,Pt);
         sph_en_vs_eta->Fill(Eta,E12);
@@ -139,7 +170,7 @@ void Diagnostics()
       };
 
       // pi0 cut
-      if( (TrigBits&0x200) && fabs(N12-2)<0.01 && Z<0.8 && fabs(M12-0.135)<0.1)
+      if(exclude_pi0==0 && (TrigBits&0x200) && fabs(N12-2)<0.01 && Z<0.8 && fabs(M12-0.135)<0.1)
       {
         pi0_pt_vs_eta->Fill(Eta,Pt);
         pi0_en_vs_eta->Fill(Eta,E12);
@@ -153,7 +184,7 @@ void Diagnostics()
       };
 
       // three or more photons cut
-      if(N12>2.5)
+      if(exclude_thr==0 && N12>2.5)
       {
         thr_pt_vs_eta->Fill(Eta,Pt);
         thr_en_vs_eta->Fill(Eta,E12);
@@ -223,6 +254,8 @@ void Diagnostics()
   trig_dist->Write();
   mass_vs_en->Write();
   mass_vs_pt->Write();
+
+  for(Int_t ee=0; ee<10; ee++) mass_dist_for_enbin[ee]->Write();
 
   sph_pt_vs_eta->Write();
   sph_en_vs_eta->Write();
