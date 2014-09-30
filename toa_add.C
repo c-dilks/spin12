@@ -6,7 +6,7 @@
 // -- reads rtree.root
 
 
-void toa_add()
+void toa_add(Bool_t printPDFs=false)
 {
   gROOT->Reset();
   // build array of phiset/*.root TFile pointers
@@ -441,64 +441,67 @@ void toa_add()
 
 
   // print wdists for each phiset file
-  char pt_wdist_pdf[3][eta_bins][en_bins][64];
-  char en_wdist_pdf[3][eta_bins][pt_bins][64];
-  char pt_wdist_pdfl[3][eta_bins][en_bins][64];
-  char en_wdist_pdfl[3][eta_bins][pt_bins][64];
-  char pt_wdist_pdfr[3][eta_bins][en_bins][64];
-  char en_wdist_pdfr[3][eta_bins][pt_bins][64];
-  for(Int_t g=0; g<eta_bins; g++)
+  if(printPDFs)
   {
-    for(Int_t e=0; e<en_bins; e++)
-    {
-      sprintf(pt_wdist_pdf[0][g][e],"phiset/pt_wdist_sph_g%d_e%d.pdf",g,e);
-      sprintf(pt_wdist_pdf[1][g][e],"phiset/pt_wdist_pi0_g%d_e%d.pdf",g,e);
-      sprintf(pt_wdist_pdf[2][g][e],"phiset/pt_wdist_thr_g%d_e%d.pdf",g,e);
-      for(Int_t j=0; j<3; j++)
-      {
-        sprintf(pt_wdist_pdfl[j][g][e],"%s(",pt_wdist_pdf[j][g][e]);
-        sprintf(pt_wdist_pdfr[j][g][e],"%s)",pt_wdist_pdf[j][g][e]);
-      };
-    };
-    for(Int_t p=0; p<pt_bins; p++)
-    {
-      sprintf(en_wdist_pdf[0][g][p],"phiset/en_wdist_sph_g%d_p%d.pdf",g,p);
-      sprintf(en_wdist_pdf[1][g][p],"phiset/en_wdist_pi0_g%d_p%d.pdf",g,p);
-      sprintf(en_wdist_pdf[2][g][p],"phiset/en_wdist_thr_g%d_p%d.pdf",g,p);
-      for(Int_t j=0; j<3; j++)
-      {
-        sprintf(en_wdist_pdfl[j][g][p],"%s(",en_wdist_pdf[j][g][p]);
-        sprintf(en_wdist_pdfr[j][g][p],"%s)",en_wdist_pdf[j][g][p]);
-      };
-    };
-  };
-  TCanvas * cc = new TCanvas("cc","cc",700,500);
-  for(Int_t j=0; j<3; j++)
-  {
+    char pt_wdist_pdf[3][eta_bins][en_bins][64];
+    char en_wdist_pdf[3][eta_bins][pt_bins][64];
+    char pt_wdist_pdfl[3][eta_bins][en_bins][64];
+    char en_wdist_pdfl[3][eta_bins][pt_bins][64];
+    char pt_wdist_pdfr[3][eta_bins][en_bins][64];
+    char en_wdist_pdfr[3][eta_bins][pt_bins][64];
     for(Int_t g=0; g<eta_bins; g++)
     {
       for(Int_t e=0; e<en_bins; e++)
       {
-        for(Int_t o=0; o<combined_pt_wdist_array[j][g][e]->GetEntries(); o++)
+        sprintf(pt_wdist_pdf[0][g][e],"phiset/pt_wdist_sph_g%d_e%d.pdf",g,e);
+        sprintf(pt_wdist_pdf[1][g][e],"phiset/pt_wdist_pi0_g%d_e%d.pdf",g,e);
+        sprintf(pt_wdist_pdf[2][g][e],"phiset/pt_wdist_thr_g%d_e%d.pdf",g,e);
+        for(Int_t j=0; j<3; j++)
         {
-          //cc->SetLogy();
-          ((TH1D*)(combined_pt_wdist_array[j][g][e]->At(o)))->Draw();
-          if(o==0) cc->Print(pt_wdist_pdfl[j][g][e],"pdf");
-          else if(o+1==combined_pt_wdist_array[j][g][e]->GetEntries()) cc->Print(pt_wdist_pdfr[j][g][e],"pdf");
-          else cc->Print(pt_wdist_pdf[j][g][e],"pdf");
-          cc->Clear();
+          sprintf(pt_wdist_pdfl[j][g][e],"%s(",pt_wdist_pdf[j][g][e]);
+          sprintf(pt_wdist_pdfr[j][g][e],"%s)",pt_wdist_pdf[j][g][e]);
         };
       };
       for(Int_t p=0; p<pt_bins; p++)
       {
-        for(Int_t o=0; o<combined_en_wdist_array[j][g][p]->GetEntries(); o++)
+        sprintf(en_wdist_pdf[0][g][p],"phiset/en_wdist_sph_g%d_p%d.pdf",g,p);
+        sprintf(en_wdist_pdf[1][g][p],"phiset/en_wdist_pi0_g%d_p%d.pdf",g,p);
+        sprintf(en_wdist_pdf[2][g][p],"phiset/en_wdist_thr_g%d_p%d.pdf",g,p);
+        for(Int_t j=0; j<3; j++)
         {
-          //cc->SetLogy();
-          ((TH1D*)(combined_en_wdist_array[j][g][p]->At(o)))->Draw();
-          if(o==0) cc->Print(en_wdist_pdfl[j][g][p],"pdf");
-          else if(o+1==combined_en_wdist_array[j][g][p]->GetEntries()) cc->Print(en_wdist_pdfr[j][g][p],"pdf");
-          else cc->Print(en_wdist_pdf[j][g][p],"pdf");
-          cc->Clear();
+          sprintf(en_wdist_pdfl[j][g][p],"%s(",en_wdist_pdf[j][g][p]);
+          sprintf(en_wdist_pdfr[j][g][p],"%s)",en_wdist_pdf[j][g][p]);
+        };
+      };
+    };
+    TCanvas * cc = new TCanvas("cc","cc",700,500);
+    for(Int_t j=0; j<3; j++)
+    {
+      for(Int_t g=0; g<eta_bins; g++)
+      {
+        for(Int_t e=0; e<en_bins; e++)
+        {
+          for(Int_t o=0; o<combined_pt_wdist_array[j][g][e]->GetEntries(); o++)
+          {
+            //cc->SetLogy();
+            ((TH1D*)(combined_pt_wdist_array[j][g][e]->At(o)))->Draw();
+            if(o==0) cc->Print(pt_wdist_pdfl[j][g][e],"pdf");
+            else if(o+1==combined_pt_wdist_array[j][g][e]->GetEntries()) cc->Print(pt_wdist_pdfr[j][g][e],"pdf");
+            else cc->Print(pt_wdist_pdf[j][g][e],"pdf");
+            cc->Clear();
+          };
+        };
+        for(Int_t p=0; p<pt_bins; p++)
+        {
+          for(Int_t o=0; o<combined_en_wdist_array[j][g][p]->GetEntries(); o++)
+          {
+            //cc->SetLogy();
+            ((TH1D*)(combined_en_wdist_array[j][g][p]->At(o)))->Draw();
+            if(o==0) cc->Print(en_wdist_pdfl[j][g][p],"pdf");
+            else if(o+1==combined_en_wdist_array[j][g][p]->GetEntries()) cc->Print(en_wdist_pdfr[j][g][p],"pdf");
+            else cc->Print(en_wdist_pdf[j][g][p],"pdf");
+            cc->Clear();
+          };
         };
       };
     };
