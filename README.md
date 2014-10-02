@@ -65,6 +65,7 @@ Data set reduction
 
 Asymmetry Analysis 
 ------------------
+0. Make diagnostic plots `diag.root` by running `Diagnostics.C`; this may take a while
 
 1. Create "env_bins.sh" by running "Bin_Splitter.C" and then source environment variables 
    with "source env_bins.sh"
@@ -81,6 +82,9 @@ Asymmetry Analysis
    - phi distributions for each run are written to the output file in object arrays, 
      which are named as phi_s[spinbit]_g[eta bin]_p[pt bin]_e[en bin]
      - the histograms in the object arrays have the run number appended to their names
+   - `PhiDists3.C` implements an energy-dependent mass cut
+     - first, using `diag.root`, run `MassCutter.C` and look at the mass cuts; the 
+       cuts will be written out to `mass_cuts`, which is then read by `PhiDists3.C`
    - you need to supply `PhiDists3.C` with exclusion lists, which are lists of runs
      for each jet type (sph,pi0,thr); these runs were excluded AFTER `toa_add.C` was
      executed (see next step) to produce "wdist" pdfs, which are pt and energy distributions

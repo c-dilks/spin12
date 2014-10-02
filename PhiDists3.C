@@ -125,6 +125,22 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   printf("NRUNS=%d\n",NRUNS);
 
 
+  // read mass cuts (produced using MassCutter.C)
+  // -- used to implement energy-dependent mass cuts for pi0s
+  //    since the mass peak drifts w.r.t. energy bin
+  // -- NOTE: THIS MAY SLIGHTLY CHANGE THE ENERGY BIN BOUNDARIES FROM WHAT'S IN ENV!!!!!!!!!
+  TTree * mass_cut_tr = new TTree("mass_cut_tr","mass_cut_tr");
+  mass_cut_tr->ReadFile("mass_cuts","enL/F:enH/F:massL/F:massM/F:massH/F");
+  Int_t mass_cut_tr_ent_tmp = mass_cut_tr->GetEntries();
+  const Int_t MENT = mass_cut_tr_ent_tmp;
+  Float_t enL,enH,massL,massH;
+  mass_cut_tr->SetBranchAddress("enL",&enL);
+  mass_cut_tr->SetBranchAddress("enH",&enH);
+  mass_cut_tr->SetBranchAddress("massL",&massL);
+  mass_cut_tr->SetBranchAddress("massH",&massH);
+
+
+
   // define kinematic distributions ("wdist" = weighting distribution)
   // -- these are distributions in energy and phi, but with finer binning; they are used 
   //    to weight the horizontal position of points on the asymmetry plots
@@ -251,6 +267,7 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
   Int_t ss,gg,pp,ee,rr;
   rr=-1; runnum_tmp=0;
   printf("fill phi dists...\n");
+  Bool_t usepi0;
   for(Int_t x=0; x<tree->GetEntries(); x++)
   {
     if((x%10000)==0) printf("%.2f%%\n",100*((Float_t)x)/((Float_t)tree->GetEntries()));
@@ -284,9 +301,9 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       exclude_sph=0;
       exclude_pi0=0;
       exclude_thr=0;
-      //for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
-      //for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
-      //for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
+      for(Int_t xx=0; xx<exclusion_sph->GetEntries(); xx++) { exclusion_sph->GetEntry(xx); if(runnum==rn_sph) exclude_sph=1; };
+      for(Int_t xx=0; xx<exclusion_pi0->GetEntries(); xx++) { exclusion_pi0->GetEntry(xx); if(runnum==rn_pi0) exclude_pi0=1; };
+      for(Int_t xx=0; xx<exclusion_thr->GetEntries(); xx++) { exclusion_thr->GetEntry(xx); if(runnum==rn_thr) exclude_thr=1; };
     };
 
     // check for valid array indices (filters out events outside kinematic boundaries)
@@ -309,12 +326,21 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
         else if(  exclude_pi0==0 &&
                   (TrigBits&0x200) && 
                   fabs(N12-2)<0.01 &&
-                  Z<0.8 &&
-                  fabs(M12-0.135)<0.1) 
+                  Z<0.8)
         {
-          phi_dist_pi0[ss][gg][pp][ee][rr]->Fill(Phi);
-          pt_wdist[1][gg][ee][rr]->Fill(Pt);
-          en_wdist[1][gg][pp][rr]->Fill(E12);
+          // energy-dependent mass cut
+          usepi0=false;
+          for(Int_t qq=0; qq<mass_cut_tr->GetEntries(); qq++)
+          {
+            mass_cut_tr->GetEntry(qq);
+            if(E12>=enL && E12<enH && M12>=massL && M12<massH) usepi0=true;
+          };
+          if(usepi0)
+          {
+            phi_dist_pi0[ss][gg][pp][ee][rr]->Fill(Phi);
+            pt_wdist[1][gg][ee][rr]->Fill(Pt);
+            en_wdist[1][gg][pp][rr]->Fill(E12);
+          };
         }
 
 
