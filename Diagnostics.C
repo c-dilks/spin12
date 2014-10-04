@@ -31,13 +31,17 @@ void Diagnostics()
   str->SetBranchAddress("Z",&Z);
   str->SetBranchAddress("TrigBits",&TrigBits);
   str->SetBranchAddress("N12",&N12);
+  Int_t runnum_tmp=0;
 
   
-  // get kinematics ranges for eta,Pt,Phi
-  Int_t runnum_tmp=0;
+  // get kinematics ranges for eta,Pt,Phi using the reduced data set and looking for maxima and minima
+  // -- this is useful for looking at kinematic distrbutions beyond the kinematic boundaries set in Bin_Splitter.C
+  // -- below there is a section to get the kinematic ranges using Bin_Splitter.C; comment either this section
+  //    or the next to choose which one to use
+  /*
   for(Int_t x=0; x<tr->GetEntries(); x++)
   {
-    if((x%100000)==0) printf("loop 1: %.2f%%\n",100*((Float_t)x)/((Float_t)tr->GetEntries()));
+    if((x%100000)==0) printf("computing kin ranges: %.2f%%\n",100*((Float_t)x)/((Float_t)tr->GetEntries()));
     tr->GetEntry(x);
     kicked = RD->Kicked(runnum,bx);
     if(runnum!=runnum_tmp)
@@ -63,6 +67,63 @@ void Diagnostics()
       Phi_max = (Phi > Phi_max) ? Phi:Phi_max;
     };
   };
+  */
+
+
+  // get kinematic ranges using the current binning set by Bin_Splitter.C
+  // -- choose this section or the previous one to set the kinematic ranges to plot in diag.root 
+  ///*
+  Int_t phi_bins0, eta_bins0, pt_bins0, en_bins0;
+  if(gSystem->Getenv("PHI_BINS")==NULL){fprintf(stderr,"ERROR: source env vars\n"); return;};
+  sscanf(gSystem->Getenv("PHI_BINS"),"%d",&phi_bins0);
+  sscanf(gSystem->Getenv("ETA_BINS"),"%d",&eta_bins0);
+  sscanf(gSystem->Getenv("PT_BINS"),"%d",&pt_bins0);
+  sscanf(gSystem->Getenv("EN_BINS"),"%d",&en_bins0);
+  const Int_t phi_bins = phi_bins0;
+  const Int_t eta_bins = eta_bins0;
+  const Int_t pt_bins = pt_bins0;
+  const Int_t en_bins = en_bins0;
+  Float_t phi_div[phi_bins+1];
+  Float_t eta_div[eta_bins+1];
+  Float_t pt_div[pt_bins+1];
+  Float_t en_div[en_bins+1];
+  char phi_div_env[phi_bins+1][20];
+  char eta_div_env[eta_bins+1][20];
+  char pt_div_env[pt_bins+1][20];
+  char en_div_env[en_bins+1][20];
+  for(Int_t i=0; i<=phi_bins; i++)
+  {
+    sprintf(phi_div_env[i],"PHI_DIV_%d",i);
+    sscanf(gSystem->Getenv(phi_div_env[i]),"%f",&(phi_div[i]));
+    printf("%s %f\n",phi_div_env[i],phi_div[i]);
+  };
+  for(Int_t i=0; i<=eta_bins; i++)
+  {
+    sprintf(eta_div_env[i],"ETA_DIV_%d",i);
+    sscanf(gSystem->Getenv(eta_div_env[i]),"%f",&(eta_div[i]));
+    printf("%s %f\n",eta_div_env[i],eta_div[i]);
+  };
+  for(Int_t i=0; i<=pt_bins; i++)
+  {
+    sprintf(pt_div_env[i],"PT_DIV_%d",i);
+    sscanf(gSystem->Getenv(pt_div_env[i]),"%f",&(pt_div[i]));
+    printf("%s %f\n",pt_div_env[i],pt_div[i]);
+  };
+  for(Int_t i=0; i<=en_bins; i++)
+  {
+    sprintf(en_div_env[i],"EN_DIV_%d",i);
+    sscanf(gSystem->Getenv(en_div_env[i]),"%f",&(en_div[i]));
+    printf("%s %f\n",en_div_env[i],en_div[i]);
+  };
+  sscanf(gSystem->Getenv("PHI_LOW"),"%f",&Phi_min);
+  sscanf(gSystem->Getenv("PHI_HIGH"),"%f",&Phi_max);
+  sscanf(gSystem->Getenv("ETA_LOW"),"%f",&Eta_min);
+  sscanf(gSystem->Getenv("ETA_HIGH"),"%f",&Eta_max);
+  sscanf(gSystem->Getenv("PT_LOW"),"%f",&Pt_min);
+  sscanf(gSystem->Getenv("PT_HIGH"),"%f",&Pt_max);
+  sscanf(gSystem->Getenv("EN_LOW"),"%f",&E12_min);
+  sscanf(gSystem->Getenv("EN_HIGH"),"%f",&E12_max);
+  //*/
 
   
   // load run exclusion trees
@@ -86,12 +147,12 @@ void Diagnostics()
   TH2D * sph_eta_vs_phi = new TH2D("sph_eta_vs_phi","single #gamma :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
   TH2D * sph_en_vs_pt = new TH2D("sph_en_vs_pt","single #gamma :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH2D * pi0_pt_vs_eta = new TH2D("pi0_pt_vs_eta","#pi^{0} :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
-  TH2D * pi0_en_vs_eta = new TH2D("pi0_en_vs_eta","#pi^{0} :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
-  TH2D * pi0_pt_vs_phi = new TH2D("pi0_pt_vs_phi","#pi^{0} :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
-  TH2D * pi0_en_vs_phi = new TH2D("pi0_en_vs_phi","#pi^{0} :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
-  TH2D * pi0_eta_vs_phi = new TH2D("pi0_eta_vs_phi","#pi^{0} :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
-  TH2D * pi0_en_vs_pt = new TH2D("pi0_en_vs_pt","#pi^{0} :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
+  TH2D * pi0_pt_vs_eta = new TH2D("pi0_pt_vs_eta","#pi^{0} (naive M cut) :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
+  TH2D * pi0_en_vs_eta = new TH2D("pi0_en_vs_eta","#pi^{0} (naive M cut) :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
+  TH2D * pi0_pt_vs_phi = new TH2D("pi0_pt_vs_phi","#pi^{0} (naive M cut) :: p_{T} vs. #phi",NBINS,-3.14,3.14,NBINS,0,Pt_max);
+  TH2D * pi0_en_vs_phi = new TH2D("pi0_en_vs_phi","#pi^{0} (naive M cut) :: E vs. #phi",NBINS,-3.14,3.14,NBINS,0,E12_max);
+  TH2D * pi0_eta_vs_phi = new TH2D("pi0_eta_vs_phi","#pi^{0} (naive M cut) :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
+  TH2D * pi0_en_vs_pt = new TH2D("pi0_en_vs_pt","#pi^{0} (naive M cut) :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
   TH2D * thr_pt_vs_eta = new TH2D("thr_pt_vs_eta","N_{#gamma}>2 :: p_{T} vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,Pt_max);
   TH2D * thr_en_vs_eta = new TH2D("thr_en_vs_eta","N_{#gamma}>2 :: E vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,E12_max);
@@ -100,16 +161,16 @@ void Diagnostics()
   TH2D * thr_eta_vs_phi = new TH2D("thr_eta_vs_phi","N_{#gamma}>2 :: #eta vs. #phi",NBINS,-3.14,3.14,NBINS,Eta_min,Eta_max);
   TH2D * thr_en_vs_pt = new TH2D("thr_en_vs_pt","N_{#gamma}>2 :: E vs. p_{T}",NBINS,0,Pt_max,NBINS,0,E12_max);
 
-  TH2D * pi0_z_vs_eta = new TH2D("pi0_z_vs_eta","#pi^{0} :: Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
-  TH2D * pi0_z_vs_phi = new TH2D("pi0_z_vs_phi","#pi^{0} :: Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
+  TH2D * pi0_z_vs_eta = new TH2D("pi0_z_vs_eta","#pi^{0} (naive M cut) :: Z vs. #eta",NBINS,Eta_min,Eta_max,NBINS,0,1);
+  TH2D * pi0_z_vs_phi = new TH2D("pi0_z_vs_phi","#pi^{0} (naive M cut) :: Z vs. #phi",NBINS,-3.14,3.14,NBINS,0,1);
 
-  TH1D * mass_dist = new TH1D("mass_dist","M_{#gamma#gamma} distribution (N12==2, jet1, M12>0, Z<0.8, kicked==0)",NBINS,0,1);
+  TH1D * mass_dist = new TH1D("mass_dist","M_{#gamma#gamma} distribution (#pi^{0} cuts without mass cut)",NBINS,0,1);
   TH1D * z_dist = new TH1D("z_dist","Z distribution (N12==2, jet1, abs(M12-0.135)<0.1, kicked==0)",NBINS,0,1);
   TH1D * trig_dist = new TH1D("trig_dist","TrigBits distribution (N12==2)",NBINS,7500,33500);
   
-  TH2D * mass_vs_en = new TH2D("mass_vs_en","M_{#gamma#gamma} vs. E_{#gamma#gamma} (N12==2, jet1, M12>0, Z<0.8, kicked==0)",
+  TH2D * mass_vs_en = new TH2D("mass_vs_en","M_{#gamma#gamma} vs. E_{#gamma#gamma} (#pi^{0} cuts without mass cut)",
     NBINS,0,E12_max,NBINS,0,1);
-  TH2D * mass_vs_pt = new TH2D("mass_vs_pt","M_{#gamma#gamma} vs. p_{T} (N12==2, jet1, M12>0, Z<0.8, kicked==0)",
+  TH2D * mass_vs_pt = new TH2D("mass_vs_pt","M_{#gamma#gamma} vs. p_{T} (#pi^{0} cuts without mass cut)",
     NBINS,0,Pt_max,NBINS,0,1);
 
   TH1D * mass_dist_for_enbin[10];
@@ -125,7 +186,7 @@ void Diagnostics()
   runnum_tmp=0;
   for(Int_t x=0; x<tr->GetEntries(); x++)
   {
-    if((x%100000)==0) printf("loop 2: %.2f%%\n",100*((Float_t)x)/((Float_t)tr->GetEntries()));
+    if((x%100000)==0) printf("filling histograms: %.2f%%\n",100*((Float_t)x)/((Float_t)tr->GetEntries()));
     tr->GetEntry(x);
     kicked = RD->Kicked(runnum,bx);
     if(runnum!=runnum_tmp)
@@ -145,7 +206,14 @@ void Diagnostics()
     if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
     {
       // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
-      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && M12>0 && Z<0.8) 
+      if(exclude_pi0==0 && 
+         (TrigBits&0x200) &&
+         fabs(N12-2)<0.01 &&
+         Z<0.8 &&
+         ( (((runnum/1000000)-1 == 12) && Pt>=2.5 && Pt<10) ||
+           (((runnum/1000000)-1 == 13) && Pt>=2.0 && Pt<10) ) &&
+         E12>=30 && E12<100 &&
+         M12>0) 
       {
         mass_dist->Fill(M12);
         mass_vs_en->Fill(E12,M12);
@@ -153,6 +221,18 @@ void Diagnostics()
         for(Int_t ee=0; ee<10; ee++)
         {
           if(E12>=(ee*10) && E12<((ee+1)*10)) mass_dist_for_enbin[ee]->Fill(M12);
+        };
+        // naive mass cut for correlation plots
+        if(fabs(M12-0.135)<0.1)
+        {
+          pi0_pt_vs_eta->Fill(Eta,Pt);
+          pi0_en_vs_eta->Fill(Eta,E12);
+          pi0_pt_vs_phi->Fill(Phi,Pt);
+          pi0_en_vs_phi->Fill(Phi,E12);
+          pi0_eta_vs_phi->Fill(Phi,Eta);
+          pi0_en_vs_pt->Fill(Pt,E12);
+          pi0_z_vs_eta->Fill(Eta,Z);
+          pi0_z_vs_phi->Fill(Phi,Z);
         };
       }
       if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
@@ -167,20 +247,6 @@ void Diagnostics()
         sph_en_vs_phi->Fill(Phi,E12);
         sph_eta_vs_phi->Fill(Phi,Eta);
         sph_en_vs_pt->Fill(Pt,E12);
-      };
-
-      // pi0 cut
-      if(exclude_pi0==0 && (TrigBits&0x200) && fabs(N12-2)<0.01 && Z<0.8 && fabs(M12-0.135)<0.1)
-      {
-        pi0_pt_vs_eta->Fill(Eta,Pt);
-        pi0_en_vs_eta->Fill(Eta,E12);
-        pi0_pt_vs_phi->Fill(Phi,Pt);
-        pi0_en_vs_phi->Fill(Phi,E12);
-        pi0_eta_vs_phi->Fill(Phi,Eta);
-        pi0_en_vs_pt->Fill(Pt,E12);
-
-        pi0_z_vs_eta->Fill(Eta,Z);
-        pi0_z_vs_phi->Fill(Phi,Z);
       };
 
       // three or more photons cut

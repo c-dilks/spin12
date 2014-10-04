@@ -313,7 +313,7 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
       // rellum consistency & polarization cut
       if( kicked==0 && isConsistent==1 && b_pol>0 && y_pol>0)
       {
-        // n photon cut
+        // single photon cut
         if( exclude_sph==0 && fabs(N12-1)<0.01 )
         {
           phi_dist_sph[ss][gg][pp][ee][rr]->Fill(Phi);
@@ -322,12 +322,20 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
           mm_wdist[0][gg][pp][ee][rr]->Fill(M12);
         }
 
-        // pi0 cut (if you change something here, change it below too for the cut used for filling mass wdist)
+        // pi0 cut (includes hard kinematic cutoffs, which differ for runs 12 & 13)
         else if(  exclude_pi0==0 &&
                   (TrigBits&0x200) && 
                   fabs(N12-2)<0.01 &&
-                  Z<0.8)
+                  Z<0.8 &&
+                  ( (((runnum/1000000)-1 == 12) && Pt>=2.5 && Pt<10) ||
+                    (((runnum/1000000)-1 == 13) && Pt>=2.0 && Pt<10) ) &&
+                  E12>=30 && E12<100
+                  )
         {
+          // fill mass wdist regardless if event passes mass cut; this is to look at full
+          // mass distributions for each run, which is useful for hunting for hot towers
+          mm_wdist[1][gg][pp][ee][rr]->Fill(M12); 
+
           // energy-dependent mass cut
           usepi0=false;
           for(Int_t qq=0; qq<mass_cut_tr->GetEntries(); qq++)
@@ -351,15 +359,6 @@ void PhiDists3(const char * filename="RedOutputset132ha.root")
           pt_wdist[2][gg][ee][rr]->Fill(Pt);
           en_wdist[2][gg][pp][rr]->Fill(E12);
           mm_wdist[2][gg][pp][ee][rr]->Fill(M12);
-        };
-
-        // pi0 cut without mass cut (for filling mass wdist)
-        if(  exclude_pi0==0 &&
-                  (TrigBits&0x200) && 
-                  fabs(N12-2)<0.01 &&
-                  Z<0.8)
-        {
-          mm_wdist[1][gg][pp][ee][rr]->Fill(M12); 
         };
       };
     };

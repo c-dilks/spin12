@@ -34,11 +34,14 @@ void MassCutter(const char * filename="diag.root")
       mdist_nbins[ee] = mdist[ee]->GetNbinsX();
       
       // cheap hack to get ignore mass spikes (hot towers)
-      // -- hot towers are all for masses > 0.3
+      // -- DEPRECATED since remaining hot towers killed by
+      //    hard low pT cutoff!
+      // -- remaining hot towers are all for masses > 0.3
       // -- pi0 peak really never goes > 0.3
       // -- thus if we find a maximum with mass > 0.3, we simply set the 
       //    bin contents to 0... this is not a nice thing to do, but I needed 
       //    to write this script quickly; TO BE UPDATED SOMEDAY!
+      /*
       if(mdist_max_mass[ee]>0.3)
       {
         while(mdist_max_mass[ee]>0.3)
@@ -50,6 +53,7 @@ void MassCutter(const char * filename="diag.root")
         };
         mdist[ee] = (TH1D*) infile->Get(mdist_n[ee]);
       };
+      */
 
 
       // search for upper bound
