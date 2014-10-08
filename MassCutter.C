@@ -10,6 +10,9 @@ void MassCutter(const char * filename="diag.root")
   {
     sprintf(mdist_n[ee],"mass_dist_for_enbin%d",ee);
     mdist[ee] = (TH1D*) infile->Get(mdist_n[ee]);
+    mdist[ee]->GetXaxis()->SetLabelSize(0.06);
+    mdist[ee]->GetYaxis()->SetLabelSize(0.06);
+    mdist[ee]->SetLineWidth(2);
   };
 
   // find bin with maximum bin and determine upper and lower bounds 
@@ -100,6 +103,9 @@ void MassCutter(const char * filename="diag.root")
       max_line[ee] = new TLine(mdist_max_mass[ee],0,mdist_max_mass[ee],mdist_max[ee]);
       lb_line[ee] = new TLine(lb[ee],0,lb[ee],mdist_max[ee]);
       ub_line[ee] = new TLine(ub[ee],0,ub[ee],mdist_max[ee]);
+      max_line[ee]->SetLineWidth(2.5);
+      lb_line[ee]->SetLineWidth(2.5);
+      ub_line[ee]->SetLineWidth(2.5);
       max_line[ee]->SetLineColor(kRed);
       lb_line[ee]->SetLineColor(kBlue);
       ub_line[ee]->SetLineColor(kGreen+2);

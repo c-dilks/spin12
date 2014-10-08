@@ -394,6 +394,7 @@ void toa_add(Bool_t printPDFs=false)
              ( (filter_sph[r]==1 && j==0) || (filter_pi0[r]==1 && j==1) || (filter_thr[r]==1 && j==2) ) )
               combined_mm_wdist_array[j][g][p][e]->AddLast(mm_wdist[j][g][p][e][r]);
           };
+          outfile->cd(); combined_mm_wdist_array[j][g][p][e]->Write(combined_mm_wdist_array_n[j][g][p][e],TObject::kSingleKey);
         };
       };
     };
