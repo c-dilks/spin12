@@ -7,6 +7,20 @@ SPIN ASYMMETRY ANALYSIS DOCUMENTATION
  -  trapezoid = env vars
 
 
+Checking and Switching Cone Sizes
+---------------------------------
+0. make sure `Output` and `redset` are symlinks to the correct directories, by running
+   `ls -l ../../ | grep '\->'`; for example, `redset -> redset_100mr` for the 100mr 
+   isolation cone reduced data set 
+
+1. make sure `diag.root` is for the correct cone size (I have it symlinked as 
+   `diag.root -> diag_100mr` for the 100mr isolation cone)
+
+2. make sure `mass_cuts` is for the correct cone size; if you're unsure, just run
+   `root -b -q MassCutter.C` using the `diag.root` file mentioned in step 2
+
+
+
 
 Installation
 ------------
