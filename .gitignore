@@ -16,3 +16,4 @@ src/*.so
 src/*Dict*
 output/*
 output_for_spin/*
+prelim.root
