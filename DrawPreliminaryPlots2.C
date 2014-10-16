@@ -33,7 +33,7 @@ void DrawPreliminaryPlots2(const char * kin="pt")
     grL = (TGraphErrors*) fileL->Get("A_LL/pt_dep_a3_g0_e0");
     strcpy(title_str,"#pi^{0} Double Helicity Asymmetry A_{LL} vs. p_{T}");
     strcpy(axis_str,"p_{T} [GeV/c]");
-    offset = 0.025;
+    offset = 0.1;
   }
   else if(!strcmp(kin,"en"))
   {
@@ -41,7 +41,7 @@ void DrawPreliminaryPlots2(const char * kin="pt")
     grL = (TGraphErrors*) fileL->Get("A_LL/en_dep_a3_g0_p0");
     strcpy(title_str,"#pi^{0} Double Helicity Asymmetry A_{LL} vs. E_{#gamma#gamma}");
     strcpy(axis_str,"E_{#gamma#gamma} [GeV]");
-    offset = 0.25;
+    offset = 1.0;
   };
 
 
@@ -111,8 +111,8 @@ void DrawPreliminaryPlots2(const char * kin="pt")
     grLsys->SetPointError(n,x_e,y_e);
   };
 
-  grSsys->SetFillColor(kRed);
-  grLsys->SetFillColor(kBlue);
+  grSsys->SetFillColor(kRed-9);
+  grLsys->SetFillColor(kBlue-9);
   grSsys->SetFillStyle(3001);
   grLsys->SetFillStyle(3001);
     
@@ -131,17 +131,17 @@ void DrawPreliminaryPlots2(const char * kin="pt")
   grS->SetLineColor(kRed);
   grS->SetMarkerSize(2);
   grS->SetMarkerStyle(kFullCircle);
-  grS->SetLineWidth(3);
+  grS->SetLineWidth(4);
   grL->SetMarkerColor(kBlue);
   grL->SetLineColor(kBlue);
   grL->SetMarkerSize(2);
   grL->SetMarkerStyle(kFullSquare);
-  grL->SetLineWidth(3);
+  grL->SetLineWidth(4);
   grLoffset->SetMarkerColor(kBlue);
   grLoffset->SetLineColor(kBlue);
   grLoffset->SetMarkerSize(2);
   grLoffset->SetMarkerStyle(kFullSquare);
-  grLoffset->SetLineWidth(3);
+  grLoffset->SetLineWidth(4);
 
 
   // create multigraph
@@ -182,7 +182,7 @@ void DrawPreliminaryPlots2(const char * kin="pt")
 
   // draw
   TCanvas * prelim_plot = new TCanvas("prelim_plot","prelim_plot",1000,500);
-  mg->Draw("ape");
+  mg->Draw("APZE");
   grLsys->Draw("2");
   grSsys->Draw("2");
   mg->Draw("pe");
