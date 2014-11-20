@@ -32,7 +32,6 @@ class RunData12 : public TObject
     Int_t YellSpin(Int_t runnum0, Int_t bXing);
     Bool_t Kicked(Int_t runnum0, Int_t bXing);
     Int_t Pattern(Int_t runnum0);
-    Float_t Scarat(Int_t runnum0, char * bit_combo, Int_t spinbit);
 
     char spindir[256];
 
@@ -52,7 +51,6 @@ class RunData12 : public TObject
     Float_t R_zdc_err[10];
     Float_t R_vpd_err[10];
     Bool_t isConsistent; // true iff zdc & vpd agree
-    Float_t scarat_arr[3][4]; // scaler ratio zdc_mul / vpd_mul
 
     // branches -- counts tree
     Int_t i_counts; // run index

@@ -1,4 +1,5 @@
 // draws STAR preliminary plots for SPIN 2014
+// -- DOES NOT DRAW SYSTEMATICS -- DEPRECATED
 
 void DrawPreliminaryPlots(const char * filename="output/spin_pi0.root")
 {
