@@ -18,17 +18,17 @@ export ETA_DIV_1=4.000000
 
 export PT_LOW=2.000000
 export PT_HIGH=10.000000
-export PT_BINS=6
+export PT_BINS=1
 export PT_DIV_0=2.000000
-export PT_DIV_1=3.000000
-export PT_DIV_2=4.000000
-export PT_DIV_3=5.000000
-export PT_DIV_4=6.500000
-export PT_DIV_5=8.000000
-export PT_DIV_6=10.000000
+export PT_DIV_1=10.000000
 
 export EN_LOW=30.000000
 export EN_HIGH=100.000000
-export EN_BINS=1
+export EN_BINS=6
 export EN_DIV_0=30.000000
-export EN_DIV_1=100.000000
+export EN_DIV_1=40.000000
+export EN_DIV_2=50.000000
+export EN_DIV_3=60.000000
+export EN_DIV_4=70.000000
+export EN_DIV_5=85.000000
+export EN_DIV_6=100.000000

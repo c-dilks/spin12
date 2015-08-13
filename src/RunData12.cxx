@@ -61,16 +61,22 @@ void RunData12::Construct(char * spindir0)
 
   for(Int_t r=1; r<10; r++)
   {
-    sprintf(R_bbc_name[r],"R%d_bbc_mean",r);
-    sprintf(R_zdc_name[r],"R%d_zdc_mean",r);
-    sprintf(R_vpd_name[r],"R%d_vpd_mean",r);
+    //sprintf(R_bbc_name[r],"R%d_bbc_mean",r);
+    //sprintf(R_zdc_name[r],"R%d_zdc_mean",r);
+    //sprintf(R_vpd_name[r],"R%d_vpd_mean",r);
+    sprintf(R_bbc_name[r],"R%d_bbcrsc",r);
+    sprintf(R_zdc_name[r],"R%d_zdcrsc",r);
+    sprintf(R_vpd_name[r],"R%d_vpdrsc",r);
     rtree_tr->SetBranchAddress(R_bbc_name[r],&(R_bbc[r]));
     rtree_tr->SetBranchAddress(R_zdc_name[r],&(R_zdc[r]));
     rtree_tr->SetBranchAddress(R_vpd_name[r],&(R_vpd[r]));
 
-    sprintf(R_bbc_err_name[r],"R%d_bbc_mean_err",r);
-    sprintf(R_zdc_err_name[r],"R%d_zdc_mean_err",r);
-    sprintf(R_vpd_err_name[r],"R%d_vpd_mean_err",r);
+    //sprintf(R_bbc_err_name[r],"R%d_bbc_mean_err",r);
+    //sprintf(R_zdc_err_name[r],"R%d_zdc_mean_err",r);
+    //sprintf(R_vpd_err_name[r],"R%d_vpd_mean_err",r);
+    sprintf(R_bbc_err_name[r],"R%d_bbc_rsc_err",r);
+    sprintf(R_zdc_err_name[r],"R%d_zdc_rsc_err",r);
+    sprintf(R_vpd_err_name[r],"R%d_vpd_rsc_err",r);
     rtree_tr->SetBranchAddress(R_bbc_err_name[r],&(R_bbc_err[r]));
     rtree_tr->SetBranchAddress(R_zdc_err_name[r],&(R_zdc_err[r]));
     rtree_tr->SetBranchAddress(R_vpd_err_name[r],&(R_vpd_err[r]));
