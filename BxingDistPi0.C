@@ -6,12 +6,12 @@
 void BxingDistPi0()
 {
   Int_t runnum;
-  TChain * tc = new TChain("TwoTr");
-  tc->Add("../../Output/Out*.root");
-  tc->SetBranchAddress("Rnum",&runnum);
-  //TChain * tc = new TChain("str");
-  //tc->Add("redset/Red*.root");
-  //tc->SetBranchAddress("runnum",&runnum);
+  //TChain * tc = new TChain("TwoTr");
+  //tc->Add("../../Output/Out*.root");
+  //tc->SetBranchAddress("Rnum",&runnum);
+  TChain * tc = new TChain("str");
+  tc->Add("redset/Red*.root");
+  tc->SetBranchAddress("runnum",&runnum);
   
   const Int_t NRUNS = 600; // assume 600 max runs
   TH1D * bxing_dist[NRUNS][5];
@@ -23,6 +23,7 @@ void BxingDistPi0()
   Float_t M12,E12,Z;
   Int_t Bunchid7bit;
   Int_t TrigBits;
+  Int_t ClIndex;
   Int_t blue;
   Int_t yell;
   Float_t N12;
@@ -33,6 +34,7 @@ void BxingDistPi0()
   tc->SetBranchAddress("N12",&N12);
   tc->SetBranchAddress("Z",&Z);
   tc->SetBranchAddress("TrigBits",&TrigBits);
+  tc->SetBranchAddress("ClIndex",&ClIndex);
   tc->SetBranchAddress("Bunchid7bit",&Bunchid7bit);
   //tc->SetBranchAddress("blue",&blue);
   //tc->SetBranchAddress("yell",&yell);
@@ -69,7 +71,7 @@ void BxingDistPi0()
     if(spin_set>=0)
     {
     */
-      if(fabs(M12-0.135)<0.1 && Z<0.8 && Pt<15 && (TrigBits&0x200) && fabs(N12-2)<0.001)
+      if(fabs(M12-0.135)<0.1 && Z<0.8 && Pt<15 && (TrigBits&0x200) && ClIndex==0 && fabs(N12-2)<0.001)
       {
         //bxing_dist[iter][spin_set]->Fill(Bunchid7bit);
         bxing_dist[iter][4]->Fill(Bunchid7bit);

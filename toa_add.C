@@ -131,6 +131,7 @@ void toa_add(Bool_t printPDFs=false)
   TH1D * pt_wdist[3][eta_bins][en_bins][rtree_ent];
   TH1D * en_wdist[3][eta_bins][pt_bins][rtree_ent];
   TH1D * mm_wdist[3][eta_bins][pt_bins][en_bins][rtree_ent];
+  TH1D * gg_wdist[3][eta_bins][pt_bins][en_bins][rtree_ent];
   
   // infile_arr [spin] [eta] [pt] [energy] [phi file]
   TObjArray * infile_sph_arr[4][eta_bins][pt_bins][en_bins][NFILES];
@@ -139,12 +140,14 @@ void toa_add(Bool_t printPDFs=false)
   TObjArray * infile_pt_wdist_arr[3][eta_bins][en_bins][NFILES];
   TObjArray * infile_en_wdist_arr[3][eta_bins][pt_bins][NFILES];
   TObjArray * infile_mm_wdist_arr[3][eta_bins][pt_bins][en_bins][NFILES];
+  TObjArray * infile_gg_wdist_arr[3][eta_bins][pt_bins][en_bins][NFILES];
   char infile_sph_arr_n[4][eta_bins][pt_bins][en_bins][200];
   char infile_pi0_arr_n[4][eta_bins][pt_bins][en_bins][200];
   char infile_thr_arr_n[4][eta_bins][pt_bins][en_bins][200];
   char infile_pt_wdist_arr_n[3][eta_bins][en_bins][200];
   char infile_en_wdist_arr_n[3][eta_bins][pt_bins][200];
   char infile_mm_wdist_arr_n[3][eta_bins][pt_bins][en_bins][200];
+  char infile_gg_wdist_arr_n[3][eta_bins][pt_bins][en_bins][200];
 
   Int_t inrun;
   Bool_t filter_sph[rtree_ent];
@@ -278,8 +281,13 @@ void toa_add(Bool_t printPDFs=false)
         {
           for(Int_t e=0; e<en_bins; e++)
           {
-            if(f==0) sprintf(infile_mm_wdist_arr_n[j][g][p][e],"mm_wdist_%s_g%d_p%d_e%d",jtype[j],g,p,e);
+            if(f==0) 
+            {
+              sprintf(infile_mm_wdist_arr_n[j][g][p][e],"mm_wdist_%s_g%d_p%d_e%d",jtype[j],g,p,e);
+              sprintf(infile_gg_wdist_arr_n[j][g][p][e],"gg_wdist_%s_g%d_p%d_e%d",jtype[j],g,p,e);
+            };
             infile_mm_wdist_arr[j][g][p][e][f] = (TObjArray*)phi_file[f]->Get(infile_mm_wdist_arr_n[j][g][p][e]);
+            infile_gg_wdist_arr[j][g][p][e][f] = (TObjArray*)phi_file[f]->Get(infile_gg_wdist_arr_n[j][g][p][e]);
             for(Int_t o=0; o<infile_mm_wdist_arr[j][g][p][e][f]->GetEntries(); o++)
             {
               sscanf(infile_mm_wdist_arr[j][g][p][e][f]->At(o)->GetName(),"mm_wdist_%*3s_g%*d_p%*d_e%*d_r%d",&inrun);
@@ -288,6 +296,17 @@ void toa_add(Bool_t printPDFs=false)
                 if(inrun == runnum_arr[h])
                 {
                   mm_wdist[j][g][p][e][h] = (TH1D*) infile_mm_wdist_arr[j][g][p][e][f]->At(o);
+                };
+              };
+            };
+            for(Int_t o=0; o<infile_gg_wdist_arr[j][g][p][e][f]->GetEntries(); o++)
+            {
+              sscanf(infile_gg_wdist_arr[j][g][p][e][f]->At(o)->GetName(),"gg_wdist_%*3s_g%*d_p%*d_e%*d_r%d",&inrun);
+              for(Int_t h=0; h<rtree_ent; h++)
+              {
+                if(inrun == runnum_arr[h])
+                {
+                  gg_wdist[j][g][p][e][h] = (TH1D*) infile_gg_wdist_arr[j][g][p][e][f]->At(o);
                 };
               };
             };
@@ -310,12 +329,14 @@ void toa_add(Bool_t printPDFs=false)
   TObjArray * combined_pt_wdist_array[3][eta_bins][en_bins];
   TObjArray * combined_en_wdist_array[3][eta_bins][pt_bins];
   TObjArray * combined_mm_wdist_array[3][eta_bins][pt_bins][en_bins];
+  TObjArray * combined_gg_wdist_array[3][eta_bins][pt_bins][en_bins];
   char combined_sph_array_n[4][eta_bins][pt_bins][en_bins][200];
   char combined_pi0_array_n[4][eta_bins][pt_bins][en_bins][200];
   char combined_thr_array_n[4][eta_bins][pt_bins][en_bins][200];
   char combined_pt_wdist_array_n[3][eta_bins][en_bins][200];
   char combined_en_wdist_array_n[3][eta_bins][pt_bins][200];
   char combined_mm_wdist_array_n[3][eta_bins][pt_bins][en_bins][200];
+  char combined_gg_wdist_array_n[3][eta_bins][pt_bins][en_bins][200];
 
   printf("--------------------------------------------------------\n");
 
@@ -387,14 +408,24 @@ void toa_add(Bool_t printPDFs=false)
         for(Int_t e=0; e<en_bins; e++)
         {
           combined_mm_wdist_array[j][g][p][e] = new TObjArray();
+          combined_gg_wdist_array[j][g][p][e] = new TObjArray();
           sprintf(combined_mm_wdist_array_n[j][g][p][e],"mm_wdist_%s_g%d_p%d_e%d",jtype[j],g,p,e);
+          sprintf(combined_gg_wdist_array_n[j][g][p][e],"gg_wdist_%s_g%d_p%d_e%d",jtype[j],g,p,e);
           for(Int_t r=0; r<rtree_ent; r++)
           {
             if(mm_wdist[j][g][p][e][r]!=NULL &&
              ( (filter_sph[r]==1 && j==0) || (filter_pi0[r]==1 && j==1) || (filter_thr[r]==1 && j==2) ) )
               combined_mm_wdist_array[j][g][p][e]->AddLast(mm_wdist[j][g][p][e][r]);
           };
-          outfile->cd(); combined_mm_wdist_array[j][g][p][e]->Write(combined_mm_wdist_array_n[j][g][p][e],TObject::kSingleKey);
+          for(Int_t r=0; r<rtree_ent; r++)
+          {
+            if(gg_wdist[j][g][p][e][r]!=NULL &&
+             ( (filter_sph[r]==1 && j==0) || (filter_pi0[r]==1 && j==1) || (filter_thr[r]==1 && j==2) ) )
+              combined_gg_wdist_array[j][g][p][e]->AddLast(gg_wdist[j][g][p][e][r]);
+          };
+          outfile->cd(); 
+          combined_mm_wdist_array[j][g][p][e]->Write(combined_mm_wdist_array_n[j][g][p][e],TObject::kSingleKey);
+          combined_gg_wdist_array[j][g][p][e]->Write(combined_gg_wdist_array_n[j][g][p][e],TObject::kSingleKey);
         };
       };
     };
@@ -408,9 +439,11 @@ void toa_add(Bool_t printPDFs=false)
   TH1D * pt_wdist_tot[3][eta_bins][en_bins];
   TH1D * en_wdist_tot[3][eta_bins][pt_bins];
   TH1D * mm_wdist_tot[3][eta_bins][pt_bins][en_bins];
+  TH1D * gg_wdist_tot[3][eta_bins][pt_bins][en_bins];
   char pt_wdist_n[3][eta_bins][en_bins][64];
   char en_wdist_n[3][eta_bins][pt_bins][64];
   char mm_wdist_n[3][eta_bins][pt_bins][en_bins][64];
+  char gg_wdist_n[3][eta_bins][pt_bins][en_bins][64];
   Int_t NWBINS = ((TH1D*)(combined_pt_wdist_array[0][0][0]->At(0)))->GetNbinsX();
   for(Int_t g=0; g<eta_bins; g++)
   {
@@ -437,7 +470,9 @@ void toa_add(Bool_t printPDFs=false)
         for(Int_t j=0; j<3; j++)
         {
           sprintf(mm_wdist_n[j][g][p][e],"mm_wdist_tot_%s_g%d_p%d_e%d",jtype[j],g,p,e);
+          sprintf(gg_wdist_n[j][g][p][e],"gg_wdist_tot_%s_g%d_p%d_e%d",jtype[j],g,p,e);
           mm_wdist_tot[j][g][p][e] = new TH1D(mm_wdist_n[j][g][p][e],mm_wdist_n[j][g][p][e],NWBINS,0,1);
+          gg_wdist_tot[j][g][p][e] = new TH1D(gg_wdist_n[j][g][p][e],gg_wdist_n[j][g][p][e],NWBINS,2.5,4.2);
         };
       };
     };
@@ -486,6 +521,12 @@ void toa_add(Bool_t printPDFs=false)
               bc_old = mm_wdist_tot[j][g][p][e]->GetBinContent(b);
               mm_wdist_tot[j][g][p][e]->SetBinContent(b,bc+bc_old);
             };
+            for(Int_t o=0; o<combined_gg_wdist_array[j][g][p][e]->GetEntries(); o++)
+            {
+              bc = ((TH1D*)(combined_gg_wdist_array[j][g][p][e]->At(o)))->GetBinContent(b);
+              bc_old = gg_wdist_tot[j][g][p][e]->GetBinContent(b);
+              gg_wdist_tot[j][g][p][e]->SetBinContent(b,bc+bc_old);
+            };
           };
         };
       };
@@ -500,6 +541,7 @@ void toa_add(Bool_t printPDFs=false)
       for(Int_t e=0; e<en_bins; e++) pt_wdist_tot[j][g][e]->Write();
       for(Int_t p=0; p<pt_bins; p++) en_wdist_tot[j][g][p]->Write();
       for(Int_t p=0; p<pt_bins; p++) for(Int_t e=0; e<en_bins; e++) mm_wdist_tot[j][g][p][e]->Write();
+      for(Int_t p=0; p<pt_bins; p++) for(Int_t e=0; e<en_bins; e++) gg_wdist_tot[j][g][p][e]->Write();
     };
   };
 
@@ -520,6 +562,9 @@ void toa_add(Bool_t printPDFs=false)
     char mm_wdist_pdf[3][eta_bins][pt_bins][en_bins][64];
     char mm_wdist_pdfl[3][eta_bins][pt_bins][en_bins][64];
     char mm_wdist_pdfr[3][eta_bins][pt_bins][en_bins][64];
+    char gg_wdist_pdf[3][eta_bins][pt_bins][en_bins][64];
+    char gg_wdist_pdfl[3][eta_bins][pt_bins][en_bins][64];
+    char gg_wdist_pdfr[3][eta_bins][pt_bins][en_bins][64];
     for(Int_t g=0; g<eta_bins; g++)
     {
       for(Int_t e=0; e<en_bins; e++)
@@ -549,6 +594,9 @@ void toa_add(Bool_t printPDFs=false)
             sprintf(mm_wdist_pdf[j][g][p][e],"phiset/mm_wdist_%s_g%d_p%d_e%d.pdf",jtype[j],g,p,e);
             sprintf(mm_wdist_pdfl[j][g][p][e],"%s(",mm_wdist_pdf[j][g][p][e]);
             sprintf(mm_wdist_pdfr[j][g][p][e],"%s)",mm_wdist_pdf[j][g][p][e]);
+            sprintf(gg_wdist_pdf[j][g][p][e],"phiset/gg_wdist_%s_g%d_p%d_e%d.pdf",jtype[j],g,p,e);
+            sprintf(gg_wdist_pdfl[j][g][p][e],"%s(",gg_wdist_pdf[j][g][p][e]);
+            sprintf(gg_wdist_pdfr[j][g][p][e],"%s)",gg_wdist_pdf[j][g][p][e]);
           };
         };
       };
@@ -593,6 +641,14 @@ void toa_add(Bool_t printPDFs=false)
               if(o==0) cc->Print(mm_wdist_pdfl[j][g][p][e],"pdf");
               else if(o+1==combined_mm_wdist_array[j][g][p][e]->GetEntries()) cc->Print(mm_wdist_pdfr[j][g][p][e],"pdf");
               else cc->Print(mm_wdist_pdf[j][g][p][e],"pdf");
+            };
+            for(Int_t o=0; o<combined_gg_wdist_array[j][g][p][e]->GetEntries(); o++)
+            {
+              //cc->SetLogy();
+              ((TH1D*)(combined_gg_wdist_array[j][g][p][e]->At(o)))->Draw();
+              if(o==0) cc->Print(gg_wdist_pdfl[j][g][p][e],"pdf");
+              else if(o+1==combined_gg_wdist_array[j][g][p][e]->GetEntries()) cc->Print(gg_wdist_pdfr[j][g][p][e],"pdf");
+              else cc->Print(gg_wdist_pdf[j][g][p][e],"pdf");
             };
           };
         };

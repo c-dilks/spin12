@@ -6,14 +6,14 @@ void Diagnostics()
 {
   gSystem->Load("src/RunData12.so");
   RunData12 * RD = new RunData12();
-  const Int_t NBINS=500; // NUMBER OF BINS
+  const Int_t NBINS=400; // NUMBER OF BINS
 
   // open chain
   TChain * tr = new TChain("str");
   tr->Add("./redset/Red*.root");
   Float_t E12,Pt,Eta,Phi,M12,Z,b_pol,y_pol;
   Bool_t kicked,isConsistent;
-  Int_t TrigBits,runnum,bx;
+  Int_t TrigBits,runnum,bx,ClIndex;
   Float_t N12;
 
   Float_t E12_min,Pt_min,Eta_min,Phi_min;
@@ -31,6 +31,7 @@ void Diagnostics()
   str->SetBranchAddress("Z",&Z);
   str->SetBranchAddress("TrigBits",&TrigBits);
   str->SetBranchAddress("N12",&N12);
+  str->SetBranchAddress("ClIndex",&ClIndex);
   Int_t runnum_tmp=0;
 
   
@@ -184,9 +185,11 @@ void Diagnostics()
   };
 
   runnum_tmp=0;
-  for(Int_t x=0; x<tr->GetEntries(); x++)
+  Int_t ENT = tr->GetEntries();
+  //ENT=10000;
+  for(Int_t x=0; x<ENT; x++)
   {
-    if((x%100000)==0) printf("filling histograms: %.2f%%\n",100*((Float_t)x)/((Float_t)tr->GetEntries()));
+    if((x%100000)==0) printf("filling histograms: %.2f%%\n",100*((Float_t)x)/((Float_t)ENT));
     tr->GetEntry(x);
     kicked = RD->Kicked(runnum,bx);
     if(runnum!=runnum_tmp)
@@ -208,6 +211,7 @@ void Diagnostics()
       // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
       if(exclude_pi0==0 && 
          (TrigBits&0x200) &&
+         ClIndex==0 &&
          fabs(N12-2)<0.01 &&
          Z<0.8 &&
          ( (((runnum/1000000)-1 == 12) && Pt>=2.5 && Pt<10) ||
@@ -235,8 +239,8 @@ void Diagnostics()
           pi0_z_vs_phi->Fill(Phi,Z);
         };
       }
-      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
-      if(exclude_pi0==0 && fabs(N12-2)<0.01) trig_dist->Fill(TrigBits);
+      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && ClIndex==0 && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
+      if(exclude_pi0==0 && fabs(N12-2)<0.01 && ClIndex==0) trig_dist->Fill(TrigBits);
 
       // single photon cut
       if(exclude_sph==0 && fabs(N12-1)<0.01)

@@ -29,6 +29,7 @@ void ReduceData(const char * filename="Outputset145ka.root",
   Int_t ent = twotr->GetEntries();
   printf(" TwoTr->GetEntries() = %d\n",ent);
 
+  Int_t ClIndex;
   Float_t M12,N12,E12,Phi,Eta,Pt,Z;
   Int_t spin,TrigBits,runnum,fill,Bunchid7bit;
   Bool_t kicked_str;
@@ -46,6 +47,7 @@ void ReduceData(const char * filename="Outputset145ka.root",
   Float_t b_pol_err;
   Float_t y_pol_err;
   Int_t pattern;
+  twotr->SetBranchAddress("ClIndex",&ClIndex);
   twotr->SetBranchAddress("M12",&M12);
   twotr->SetBranchAddress("N12",&N12);
   twotr->SetBranchAddress("E12",&E12);
@@ -57,6 +59,7 @@ void ReduceData(const char * filename="Outputset145ka.root",
   twotr->SetBranchAddress("TrigBits",&TrigBits);
   twotr->SetBranchAddress("Rnum",&runnum);
   twotr->SetBranchAddress("Bunchid7bit",&Bunchid7bit);
+  str->Branch("ClIndex",&ClIndex,"ClIndex/I");
   str->Branch("M12",&M12,"M12/F");
   str->Branch("N12",&N12,"N12/F");
   str->Branch("E12",&E12,"E12/F");
@@ -156,8 +159,8 @@ void ReduceData(const char * filename="Outputset145ka.root",
         runnum_tmp = runnum;
       };
 
-      // BXING SHIFT CORRECTION
-      Bunchid7bit = (Bunchid7bit+1)%120;
+      // BXING SHIFT CORRECTION (for run 12 only)
+      if(runnum/1000000==13) Bunchid7bit = (Bunchid7bit+1)%120;
 
       blue_str = RD->BlueSpin(runnum,Bunchid7bit);
       yell_str = RD->YellSpin(runnum,Bunchid7bit);
