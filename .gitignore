@@ -3,6 +3,7 @@
 *.root
 *.bat
 *.swp
+*.gz
 logfiles/*
 patchset/*
 pdfset/*

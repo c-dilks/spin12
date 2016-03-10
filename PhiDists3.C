@@ -63,6 +63,29 @@ void PhiDists3(const char * filename="RedOutputset079x.root")
   Float_t en_low; sscanf(gSystem->Getenv("EN_LOW"),"%f",&en_low);
   Float_t en_high; sscanf(gSystem->Getenv("EN_HIGH"),"%f",&en_high);
 
+  // determin pT cuts
+  Int_t whichEtaCut; sscanf(gSystem->Getenv("WHICH_ETA_CUT"),"%d",&whichEtaCut);
+  Int_t run_year=12;
+  Float_t pt_low_hard,pt_high_hard;
+  if(run_year==12) {
+    switch(whichEtaCut) {
+      case 0: pt_low_hard=2.5; break; /* all cells */
+      case 1: pt_low_hard=4.0; break; /* large cells */
+      case 2: pt_low_hard=3.4; break; /* small cells */
+    };
+  }
+  else if(run_year==13) {
+    switch(whichEtaCut) {
+      case 0: pt_low_hard=2.0; break;
+      case 1: pt_low_hard=3.25; break;
+      case 2: pt_low_hard=2.2; break;
+    };
+  };
+  pt_high_hard=10; // set to 10 GeV for whole data set
+    
+
+
+
 
   // read redset tree and set output file name
   Int_t runnum,bx,blue,yell,TrigBits,pattern,ClIndex;
@@ -334,12 +357,12 @@ void PhiDists3(const char * filename="RedOutputset079x.root")
 
         // pi0 cut (includes hard kinematic cutoffs, which differ for runs 12 & 13)
         else if(  exclude_pi0==0 &&
-                  (TrigBits&0x200) && 
+                  (TrigBits&0xFFF) && 
                   ClIndex==0 &&
                   fabs(N12-2)<0.01 &&
                   Z<0.8 &&
-                  ( (((runnum/1000000)-1 == 12) && Pt>=2.5 && Pt<10) ||
-                    (((runnum/1000000)-1 == 13) && Pt>=2.0 && Pt<10) ) &&
+                  Pt>=pt_low_hard &&
+                  Pt<pt_high_hard &&
                   E12>=30 && E12<100
                   )
         {

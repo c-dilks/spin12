@@ -6,12 +6,12 @@
 void BxingDistPi0()
 {
   Int_t runnum;
-  //TChain * tc = new TChain("TwoTr");
-  //tc->Add("../../Output/Out*.root");
-  //tc->SetBranchAddress("Rnum",&runnum);
-  TChain * tc = new TChain("str");
-  tc->Add("redset/Red*.root");
-  tc->SetBranchAddress("runnum",&runnum);
+  TChain * tc = new TChain("TwoTr");
+  tc->Add("../../Output/Out*.root");
+  tc->SetBranchAddress("Rnum",&runnum);
+  //TChain * tc = new TChain("str");
+  //tc->Add("redset/Red*.root");
+  //tc->SetBranchAddress("runnum",&runnum);
   
   const Int_t NRUNS = 600; // assume 600 max runs
   TH1D * bxing_dist[NRUNS][5];

@@ -210,7 +210,7 @@ void Diagnostics()
     {
       // IF YOU CHANGE THE CUTS HERE, CHANGE THEM IN THE PLOT TITLES TOO!!!!!
       if(exclude_pi0==0 && 
-         (TrigBits&0x200) &&
+         (TrigBits&0xFFF) &&
          ClIndex==0 &&
          fabs(N12-2)<0.01 &&
          Z<0.8 &&
@@ -239,7 +239,7 @@ void Diagnostics()
           pi0_z_vs_phi->Fill(Phi,Z);
         };
       }
-      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0x200) && ClIndex==0 && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
+      if(exclude_pi0==0 && fabs(N12-2)<0.01 && (TrigBits&0xFFF) && ClIndex==0 && fabs(M12-0.135)<0.1) z_dist->Fill(Z);
       if(exclude_pi0==0 && fabs(N12-2)<0.01 && ClIndex==0) trig_dist->Fill(TrigBits);
 
       // single photon cut
